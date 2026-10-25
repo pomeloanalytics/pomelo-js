@@ -1,3 +1,5 @@
+import type { components } from './generated/openapi.js';
+
 /** Fetch implementation, injectable for tests and server-side integrations. */
 export type Fetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
@@ -23,6 +25,8 @@ export interface ResponseMetadata {
   requestId?: string;
   /** Value from Retry-After, when present. No retry is performed by the SDK. */
   retryAfter?: string;
+  /** Original API meta object, when present. Field names and additional values are preserved. */
+  metering?: components['schemas']['MeteredMeta'];
   rateLimit: {
     limit?: number;
     remaining?: number;

@@ -4,6 +4,7 @@ import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertNpmrc, assertSourceContent, assertSourceFilename } from './lib/source-policy.mjs';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const packageDir = join(root, 'packages/api');
@@ -11,31 +12,20 @@ const temporary = await mkdtemp(join(tmpdir(), 'pomelo-api-audit-'));
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const run = (command, args, cwd = root) => execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 
-const forbidden = [
-  /@analytics\/shared/,
-  /(?:"|')file:/,
-  /docs\/internal/,
-  /packages\/services/,
-  /sk-analytics/,
-  /\bisPunchout\b/,
-  /\bgetMarketplaceStats\b/,
-  /AKIA[A-Z0-9]{16}/,
-  /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
-  /gh[pousr]_[A-Za-z0-9]{30,}/,
-  /github_pat_[A-Za-z0-9_]{30,}/,
-  /https?:\/\/[^\s/]+:[^\s@]+@/,
-];
-
 async function scan(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     if (['.git', 'node_modules', '.test-build', '.artifacts', 'dist'].includes(entry.name)) continue;
+    assertSourceFilename(entry.name);
     const path = join(directory, entry.name);
     assert.ok(!entry.isSymbolicLink(), `Unexpected symbolic link: ${relative(root, path)}`);
     if (entry.isDirectory()) await scan(path);
-    else if (/\.(?:ts|js|mjs|json|md|ya?ml)$/.test(entry.name)) {
-      const text = await readFile(path, 'utf8');
-      // This scanner's patterns are checks, not embedded source or credentials.
-      if (path !== fileURLToPath(import.meta.url)) for (const pattern of forbidden) assert.ok(!pattern.test(text), `Disallowed content in ${relative(root, path)}`);
+    else {
+      const bytes = await readFile(path);
+      if (/^\.?npmrc(?:\..+)?$/i.test(entry.name)) assertNpmrc(bytes.toString('utf8'));
+      // Inspect every text file, including extensionless files and dotfiles.
+      if (bytes.includes(0)) continue;
+      const text = bytes.toString('utf8');
+      assertSourceContent(text, relative(root, path));
     }
   }
 }
@@ -46,15 +36,16 @@ try {
   assert.equal(manifest.name, '@pomeloanalytics/api');
   assert.equal(manifest.version, '0.1.0-beta.0');
   assert.equal(manifest.private, true, 'Keep publication blocked until the owner approves release setup.');
+  assert.match(manifest.scripts?.prepublishOnly ?? '', /throw new Error/, 'Keep the explicit publication guard.');
   assert.deepEqual(manifest.files, ['dist', 'README.md', 'CHANGELOG.md', 'LICENSE']);
-  assert.deepEqual(manifest.exports, { '.': { types: './dist/index.d.ts', import: './dist/index.js' } });
+  assert.deepEqual(manifest.exports, { '.': { types: './dist/index.d.ts', import: './dist/index.js', default: './dist/index.js' } });
   assert.equal(Object.keys(manifest.dependencies ?? {}).length, 0, 'The API package must have no runtime dependencies.');
   const [dryRun] = JSON.parse(run(npm, ['pack', '--dry-run', '--ignore-scripts', '--json'], packageDir));
   assert.ok(dryRun.files.length > 4);
   for (const file of dryRun.files) {
     assert.ok(/^(?:package\.json|README\.md|CHANGELOG\.md|LICENSE|dist\/[a-zA-Z0-9/_-]+\.(?:js|d\.ts))$/.test(file.path), `Unexpected package file: ${file.path}`);
     const content = await readFile(join(packageDir, file.path), 'utf8');
-    for (const pattern of forbidden) assert.ok(!pattern.test(content), `Disallowed packaged content in ${file.path}`);
+    assertSourceContent(content, file.path);
   }
   const [packed] = JSON.parse(run(npm, ['pack', '--ignore-scripts', '--json', '--pack-destination', temporary], packageDir));
   const tarball = join(temporary, packed.filename);
@@ -63,14 +54,26 @@ try {
   await writeFile(join(temporary, 'package.json'), JSON.stringify({ name: 'pomelo-api-consumer-smoke', private: true, type: 'module' }));
   run(npm, ['install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], temporary);
   await writeFile(join(temporary, 'consumer.ts'), [
-    "import { PomeloApiError, PomeloTransportError, type PomeloClientOptions } from '@pomeloanalytics/api';",
+    "import { createPomeloClient, PomeloClient, PomeloApiError, PomeloTransportError, type PomeloClientOptions } from '@pomeloanalytics/api';",
+    "import { runMockExample } from './mock-consumer.js';",
     "const options: PomeloClientOptions = { token: 'synthetic-test-token' };",
-    'if (!options.token || !PomeloApiError || !PomeloTransportError) throw new Error("Invalid package exports");',
+    'if (!options.token || !PomeloApiError || !PomeloTransportError || !(createPomeloClient(options) instanceof PomeloClient)) throw new Error("Invalid package exports");',
+    'await runMockExample();',
     '',
   ].join('\n'));
-  run(process.execPath, [join(root, 'node_modules/typescript/bin/tsc'), '--strict', '--skipLibCheck', '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--outDir', 'compiled', 'consumer.ts'], temporary);
+  await writeFile(join(temporary, 'mock-consumer.ts'), await readFile(join(root, 'examples/server/mock-consumer.ts'), 'utf8'));
+  run(process.execPath, [join(root, 'node_modules/typescript/bin/tsc'), '--strict', '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--outDir', 'compiled', 'consumer.ts', 'mock-consumer.ts'], temporary);
   run(process.execPath, ['compiled/consumer.js'], temporary);
-  console.log(`Tarball audited: ${manifest.name}@${manifest.version}, ${dryRun.files.length} allowlisted files; fresh consumer compiled and ran.`);
+  await writeFile(join(temporary, 'consumer.cjs'), [
+    "const assert = require('node:assert/strict');",
+    "const { createPomeloClient } = require('@pomeloanalytics/api');",
+    'let calls = 0;',
+    "const client = createPomeloClient({ token: 'synthetic-test-token', fetch: async () => { calls++; return Response.json({ items: [] }); } });",
+    'client.sites.list().then(({ data }) => { assert.deepEqual(data, { items: [] }); assert.equal(calls, 1); }).catch(() => { process.exitCode = 1; });',
+    '',
+  ].join('\n'));
+  run(process.execPath, ['consumer.cjs'], temporary);
+  console.log(`Tarball audited: ${manifest.name}@${manifest.version}, ${dryRun.files.length} allowlisted files; fresh ESM and CommonJS consumers ran.`);
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }
