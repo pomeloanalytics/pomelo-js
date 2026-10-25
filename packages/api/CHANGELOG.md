@@ -10,4 +10,5 @@
 - Add server examples, contract parameter checks, and isolated tarball consumption.
 - Reflect the reviewed Acquisition full/summary/details union and the public
   Acquisition/Actions include parameter, preserving each source response shape.
-- Keep publication blocked pending approved release configuration.
+- Prepare public npm release metadata using the `beta` tag. The candidate remains
+  unpublished and requires a separate owner GO for publication.

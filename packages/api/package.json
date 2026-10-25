@@ -1,7 +1,6 @@
 {
   "name": "@pomeloanalytics/api",
   "version": "0.1.0-beta.0",
-  "private": true,
   "description": "Server-side TypeScript client for the Pomelo Analytics API.",
   "type": "module",
   "license": "MIT",
@@ -17,10 +16,14 @@
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js" }
   },
   "files": ["dist", "README.md", "CHANGELOG.md", "LICENSE"],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "beta"
+  },
   "sideEffects": false,
   "engines": { "node": "^22.13.0 || ^24.0.0" },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "prepublishOnly": "node -e \"throw new Error('Publication is blocked pending owner approval and release setup.')\""
+    "build": "tsc -p tsconfig.json"
   }
 }

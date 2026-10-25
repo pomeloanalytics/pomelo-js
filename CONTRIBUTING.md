@@ -29,8 +29,26 @@ API requests are metered by the server. Do not add automatic retries, caches,
 aggregation, or fallback endpoints. Keep API tokens on the server, including in
 framework integrations that render on both the server and client.
 
-Releases are a separate owner-approved operation. Do not add a privileged release
-workflow or remove the publication block as part of an unrelated contribution.
+## Release preparation
+
+`@pomeloanalytics/api@0.1.0-beta.0` is an unpublished release candidate. Only the
+API package has publishable metadata, selecting the public npm registry, public
+access, and the `beta` tag. The workspace remains private. Merging source or
+packing a tarball does not authorize publication. A separate owner GO must name
+the reviewed source commit and tarball checksum before any bootstrap or staging
+operation. There is no publication workflow in this repository.
+
+The package must exist on npm before [trusted publishing can be configured](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
+Treat bootstrap as a one-time owner-approved operation: even
+[staging a new package](https://docs.npmjs.com/staged-publishing/) creates a public
+`0.0.0-stage` placeholder. Before later automation, review and configure its exact
+workflow and trusted publisher together. A new
+[trusted publisher](https://docs.npmjs.com/trusted-publishers/#trusted-publisher-configuration-expiry)
+must complete its first successful publication within two days or it expires.
+Staging requires maintainer approval with 2FA before the candidate goes live.
+Bootstrap provenance and OIDC have not been demonstrated by local checks.
+
+Do not add a privileged release workflow as part of an unrelated contribution.
 
 The package audit inspects source text, dotfiles, and tarball contents before
 installing a local tarball in a temporary consumer. Keep repository `.npmrc`

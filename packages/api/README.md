@@ -2,8 +2,9 @@
 
 Server-side TypeScript client for the Pomelo Analytics API.
 
-Initial local preparation: `0.1.0-beta.0`. MIT licensed. Not published.
-Release configuration awaits owner approval; publication is blocked.
+Release candidate: `0.1.0-beta.0`. MIT licensed. Not published.
+Its npm metadata selects public access and the `beta` tag. Publishing requires a
+separate owner GO for the reviewed tarball; no publication workflow is configured.
 
 Use Node.js 22.13+ on the Node 22 release line or Node.js 24. The package uses ESM
 and has no runtime dependencies. CommonJS consumers on these supported Node

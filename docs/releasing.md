@@ -1,7 +1,8 @@
 # Release preparation
 
 The API package is prepared as `0.1.0-beta.0` under MIT. It is not published.
-`private: true` and the failing `prepublishOnly` hook deliberately block release.
+The release candidate has publishable metadata for the public npm registry with
+public access and the `beta` tag. The workspace remains `private: true`.
 There is no release workflow or registry credential in this repository.
 
 ## Review a candidate locally
@@ -29,8 +30,13 @@ action. Staging also requires that approval: for a new package, npm makes a
 public `0.0.0-stage` placeholder even before approving the staged contents.
 Do not run a staging command as a read-only verification.
 
-Use a separate reviewed release change to remove the publication blocks and
-configure the public repository's `release.yml`. Keep its execution manual,
+The first package bootstrap is a one-time operation requiring a distinct owner
+GO. It must precede trusted publisher setup because the
+[package must already exist on npm](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
+Local tarball checks do not demonstrate bootstrap provenance or OIDC publishing.
+
+A later, separately reviewed change can configure an OIDC release workflow in
+the public repository. Keep its execution manual,
 its token permissions in read mode except for `id-token: write` on the release
 job, and any environment approval independent of the publishing contributor.
 Use pinned official actions and GitHub-hosted runners. No persistent npm token,
@@ -38,9 +44,10 @@ private product checkout or cloud deployment belongs in this workflow.
 
 Configure the package's trusted publisher for `pomeloanalytics/pomelo-js`, the
 exact workflow filename and approved environment. Restrict it to staging;
-direct publication and dist-tag management must remain disabled. The initial
-package ownership/bootstrap sequence must be resolved before enabling this
-workflow. This document does not configure a publisher.
+direct publication and dist-tag management must remain disabled. Qualify and
+configure the workflow and publisher just before their first approved use: a new
+[trusted publisher must complete its first successful publication within two days](https://docs.npmjs.com/trusted-publishers/#trusted-publisher-configuration-expiry)
+or it expires. This document does not configure a workflow or publisher.
 
 The publishing account needs 2FA. Staged publishing currently requires npm
 11.15.0 or newer and Node 22.14.0 or newer. Verify these requirements again when
