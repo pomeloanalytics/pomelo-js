@@ -6,7 +6,9 @@ Initial local preparation: `0.1.0-beta.0`. MIT licensed. Not published.
 Release configuration awaits owner approval; publication is blocked.
 
 Use Node.js 22.13+ on the Node 22 release line or Node.js 24. The package uses ESM
-and has no runtime dependencies. Keep the API token in server-side configuration.
+and has no runtime dependencies. CommonJS consumers on these supported Node
+versions can use `require('@pomeloanalytics/api')` to load the same ESM build.
+Keep the API token in server-side configuration.
 Importing the package is safe during SSR; using it in a browser is rejected before
 fetch is called.
 

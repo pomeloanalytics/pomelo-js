@@ -38,7 +38,7 @@ try {
   assert.equal(manifest.private, true, 'Keep publication blocked until the owner approves release setup.');
   assert.match(manifest.scripts?.prepublishOnly ?? '', /throw new Error/, 'Keep the explicit publication guard.');
   assert.deepEqual(manifest.files, ['dist', 'README.md', 'CHANGELOG.md', 'LICENSE']);
-  assert.deepEqual(manifest.exports, { '.': { types: './dist/index.d.ts', import: './dist/index.js' } });
+  assert.deepEqual(manifest.exports, { '.': { types: './dist/index.d.ts', import: './dist/index.js', default: './dist/index.js' } });
   assert.equal(Object.keys(manifest.dependencies ?? {}).length, 0, 'The API package must have no runtime dependencies.');
   const [dryRun] = JSON.parse(run(npm, ['pack', '--dry-run', '--ignore-scripts', '--json'], packageDir));
   assert.ok(dryRun.files.length > 4);
@@ -64,7 +64,16 @@ try {
   await writeFile(join(temporary, 'mock-consumer.ts'), await readFile(join(root, 'examples/server/mock-consumer.ts'), 'utf8'));
   run(process.execPath, [join(root, 'node_modules/typescript/bin/tsc'), '--strict', '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--outDir', 'compiled', 'consumer.ts', 'mock-consumer.ts'], temporary);
   run(process.execPath, ['compiled/consumer.js'], temporary);
-  console.log(`Tarball audited: ${manifest.name}@${manifest.version}, ${dryRun.files.length} allowlisted files; fresh consumer compiled and ran.`);
+  await writeFile(join(temporary, 'consumer.cjs'), [
+    "const assert = require('node:assert/strict');",
+    "const { createPomeloClient } = require('@pomeloanalytics/api');",
+    'let calls = 0;',
+    "const client = createPomeloClient({ token: 'synthetic-test-token', fetch: async () => { calls++; return Response.json({ items: [] }); } });",
+    'client.sites.list().then(({ data }) => { assert.deepEqual(data, { items: [] }); assert.equal(calls, 1); }).catch(() => { process.exitCode = 1; });',
+    '',
+  ].join('\n'));
+  run(process.execPath, ['consumer.cjs'], temporary);
+  console.log(`Tarball audited: ${manifest.name}@${manifest.version}, ${dryRun.files.length} allowlisted files; fresh ESM and CommonJS consumers ran.`);
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }
