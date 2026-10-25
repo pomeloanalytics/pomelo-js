@@ -156,7 +156,7 @@
         }
       },
       "ReportInclude": {
-        "description": "Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. The deployed configuration must be qualified separately.",
+        "description": "Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here.",
         "in": "query",
         "name": "include",
         "required": false,
@@ -4135,7 +4135,7 @@
     },
     "/v1/reports/acquisition": {
       "get": {
-        "description": "Mixed route family. The strict-safe slice exposes channels, host-only\nreferrers, and landing pages. Attribution slices such as sources,\nmediums, and campaigns remain profile-gated. Read\n`availability.readModel` for the route split, then inspect\n`availability.sections` as `acquisition_attribution`.\n`include=summary` returns `current.channels`, coverage and mix timeseries.\n`full` returns `current.by_channel` and top lists. `details` returns\ndimensions, landing pages and optional goal impact; it is a distinct\nAcquisition variant, not the Content alias for full.\n",
+        "description": "Mixed route family. The strict-safe slice exposes channels, host-only\nreferrers, and landing pages. Attribution slices such as sources,\nmediums, and campaigns remain profile-gated. Read\n`availability.readModel` for the route split, then inspect\n`availability.sections` as `acquisition_attribution`.\nWhen report include selection is enabled, `include` selects the response\ndepth and omission selects `summary`. Otherwise, `include` is ignored\nand the handler uses `full`.\n`include=summary` returns `current.channels`, coverage and mix timeseries.\n`full` returns `current.by_channel` and top lists. `details` returns\ndimensions, landing pages and optional goal impact; it is a distinct\nAcquisition variant, not the Content alias for full.\n",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestIdHeader"
@@ -4221,7 +4221,7 @@
     },
     "/v1/reports/actions": {
       "get": {
-        "description": "Mixed route family. The strict-safe slice covers bounded simple actions\n(`ui.click`, `outbound.click`, `file.download`, `form.submit`). Richer\nfamilies such as goals, errors, and custom events remain profile-gated\nand are marked through `availability.sections` as `actions_advanced`.\nUse `availability.readModel` to distinguish the stable baseline from\nthe enriched families unlocked by `Extended`.\n`include=summary` keeps aggregate families and timeseries and leaves\naction/context detail lists empty. `full` and `details` request those\ndetail rows using the same Actions response schema.\n",
+        "description": "Mixed route family. The strict-safe slice covers bounded simple actions\n(`ui.click`, `outbound.click`, `file.download`, `form.submit`). Richer\nfamilies such as goals, errors, and custom events remain profile-gated\nand are marked through `availability.sections` as `actions_advanced`.\nUse `availability.readModel` to distinguish the stable baseline from\nthe enriched families unlocked by `Extended`.\nWhen report include selection is enabled, `include` selects the response\ndepth and omission selects `summary`. Otherwise, `include` is ignored\nand the handler uses `full`.\n`include=summary` keeps aggregate families and timeseries and leaves\naction/context detail lists empty. `full` and `details` request those\ndetail rows using the same Actions response schema.\n",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestIdHeader"

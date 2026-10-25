@@ -338,6 +338,9 @@ export interface paths {
          *     mediums, and campaigns remain profile-gated. Read
          *     `availability.readModel` for the route split, then inspect
          *     `availability.sections` as `acquisition_attribution`.
+         *     When report include selection is enabled, `include` selects the response
+         *     depth and omission selects `summary`. Otherwise, `include` is ignored
+         *     and the handler uses `full`.
          *     `include=summary` returns `current.channels`, coverage and mix timeseries.
          *     `full` returns `current.by_channel` and top lists. `details` returns
          *     dimensions, landing pages and optional goal impact; it is a distinct
@@ -350,7 +353,7 @@ export interface paths {
                     compare?: components["parameters"]["CompareParam"];
                     /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
-                    /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. The deployed configuration must be qualified separately. */
+                    /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. */
                     include?: components["parameters"]["ReportInclude"];
                     /** @description Number of rows returned by top lists for report endpoints. */
                     limit?: components["parameters"]["ReportLimit"];
@@ -425,6 +428,9 @@ export interface paths {
          *     and are marked through `availability.sections` as `actions_advanced`.
          *     Use `availability.readModel` to distinguish the stable baseline from
          *     the enriched families unlocked by `Extended`.
+         *     When report include selection is enabled, `include` selects the response
+         *     depth and omission selects `summary`. Otherwise, `include` is ignored
+         *     and the handler uses `full`.
          *     `include=summary` keeps aggregate families and timeseries and leaves
          *     action/context detail lists empty. `full` and `details` request those
          *     detail rows using the same Actions response schema.
@@ -440,7 +446,7 @@ export interface paths {
                     compare?: components["parameters"]["CompareParam"];
                     /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
-                    /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. The deployed configuration must be qualified separately. */
+                    /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. */
                     include?: components["parameters"]["ReportInclude"];
                     /** @description Number of rows returned by top lists for report endpoints. */
                     limit?: components["parameters"]["ReportLimit"];
@@ -1847,7 +1853,7 @@ export interface components {
          *     inactivity.
          */
         Metric: "pageviews" | "sessions" | "events";
-        /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. The deployed configuration must be qualified separately. */
+        /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. */
         ReportInclude: "summary" | "full" | "details";
         /** @description Number of rows returned by top lists for report endpoints. */
         ReportLimit: number;
