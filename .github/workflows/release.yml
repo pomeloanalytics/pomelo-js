@@ -4,10 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Reviewed API package version
-        type: choice
-        options: ['0.1.0-beta.0']
-        default: '0.1.0-beta.0'
+        description: Reviewed API SemVer prerelease (X.Y.Z-beta.N)
+        type: string
         required: true
       source_sha:
         description: Exact reviewed main commit (40 lowercase hexadecimal characters)
@@ -61,7 +59,7 @@ jobs:
           assert.equal(git('ls-remote', 'origin', 'refs/heads/main').split(/\s+/)[0], process.env.SOURCE_SHA, 'Main has changed');
           const pkg = JSON.parse(readFileSync('packages/api/package.json', 'utf8'));
           assert.equal(pkg.name, '@pomeloanalytics/api');
-          assert.equal(pkg.version, '0.1.0-beta.0');
+          assert.match(pkg.version, /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)-beta\.(?:0|[1-9]\d*)$/, 'Only beta prereleases may be staged');
           assert.equal(process.env.API_VERSION, pkg.version, 'Package version mismatch');
           assert.equal(git('rev-parse', `refs/tags/api-v${pkg.version}^{commit}`), process.env.SOURCE_SHA, 'Source tag mismatch');
           NODE
@@ -93,7 +91,7 @@ jobs:
         id: tarball
         with:
           name: api-beta-tarball-${{ github.run_attempt }}
-          path: .artifacts/pomeloanalytics-api-0.1.0-beta.0.tgz
+          path: .artifacts/pomeloanalytics-api-${{ inputs.version }}.tgz
           if-no-files-found: error
           retention-days: 7
 
@@ -126,15 +124,15 @@ jobs:
           import { readFileSync, readdirSync } from 'node:fs';
           assert.equal(process.env.GITHUB_REF, 'refs/heads/main');
           assert.equal(process.env.GITHUB_SHA, process.env.SOURCE_SHA, 'Dispatch source mismatch');
-          assert.equal(process.env.API_VERSION, '0.1.0-beta.0');
-          const filename = 'pomeloanalytics-api-0.1.0-beta.0.tgz';
+          assert.match(process.env.API_VERSION, /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)-beta\.(?:0|[1-9]\d*)$/, 'Only beta prereleases may be staged');
+          const filename = `pomeloanalytics-api-${process.env.API_VERSION}.tgz`;
           assert.deepEqual(readdirSync('candidate'), [filename], 'Unexpected downloaded files');
           const bytes = readFileSync(`candidate/${filename}`);
           assert.equal(createHash('sha256').update(bytes).digest('hex'), process.env.EXPECTED_SHA256, 'Downloaded checksum mismatch');
           NODE
       - name: Stage the API beta with OIDC and provenance
         run: |
-          npm stage publish candidate/pomeloanalytics-api-0.1.0-beta.0.tgz --ignore-scripts --tag beta --access public --registry https://registry.npmjs.org/ --provenance --json --loglevel=error > "$RUNNER_TEMP/stage-result.json"
+          npm stage publish "candidate/pomeloanalytics-api-${API_VERSION}.tgz" --ignore-scripts --tag beta --access public --registry https://registry.npmjs.org/ --provenance --json --loglevel=error > "$RUNNER_TEMP/stage-result.json"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: api-beta-stage-result-${{ github.run_attempt }}

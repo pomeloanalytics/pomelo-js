@@ -31,13 +31,12 @@ framework integrations that render on both the server and client.
 
 ## Release preparation
 
-`@pomeloanalytics/api@0.1.0-beta.0` is an unpublished release candidate. Only the
-API package has publishable metadata, selecting the public npm registry, public
+Only the API package has publishable metadata, selecting the public npm registry, public
 access, and the `beta` tag. The workspace remains private. Merging source or
 packing a tarball does not authorize publication. A separate owner GO must name
 the reviewed source commit and tarball checksum before any bootstrap or staging
 operation. The [manual release workflow](docs/releasing.md) stages the approved
-API beta only; a maintainer must approve the staged package outside the workflow.
+API beta prereleases only; a maintainer must approve each staged version outside the workflow.
 
 The package must exist on npm before [trusted publishing can be configured](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
 Treat bootstrap as a one-time owner-approved operation: even
@@ -48,6 +47,12 @@ workflow and trusted publisher together. A new
 must complete its first successful publication within two days or it expires.
 Staging requires maintainer approval with 2FA before the candidate goes live.
 Bootstrap provenance and OIDC have not been demonstrated by local checks.
+
+The initial `0.1.0-beta.0` was published through manual staging and 2FA approval.
+Its registry tarball was verified and installed in fresh consumers. That release
+does not have an OIDC provenance attestation. The workflow's first real OIDC
+staging remains to be qualified with the next separately reviewed beta version;
+do not create a new version just to exercise the workflow.
 
 Do not add a privileged release workflow as part of an unrelated contribution.
 

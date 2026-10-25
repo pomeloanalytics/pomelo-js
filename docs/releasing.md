@@ -4,7 +4,7 @@ The API package's initial beta version is `0.1.0-beta.0` under MIT.
 Its publication metadata selects the public npm registry with
 public access and the `beta` tag. The workspace remains `private: true`.
 The manual [release workflow](../.github/workflows/release.yml) stages this API
-beta only. It contains no registry credential and cannot approve a staged package.
+beta prereleases only. It contains no registry credential and cannot approve a staged package.
 
 ## Review a candidate locally
 
@@ -36,12 +36,31 @@ GO. It must precede trusted publisher setup because the
 [package must already exist on npm](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
 Local tarball checks do not demonstrate bootstrap provenance or OIDC publishing.
 
+The first `0.1.0-beta.0` release used manual staging and 2FA approval. Its
+published tarball SHA256 is
+`3c7c2009c36816cc3b044d48a778437254ded8280367ec67b87ce6f2a1d3a675`,
+from source tag `api-v0.1.0-beta.0` at
+`f7e07d1983fd40f2ac320644a0e2d7111a458d63`. Registry installation and
+ESM/CommonJS consumer checks passed; their API responses were mocked.
+No OIDC provenance attestation is claimed for this manual bootstrap.
+
+Before that release, creating a trusted publisher returned `404` while registry
+metadata existed without published versions and the package page returned `404`.
+A staged placeholder alone did not establish working publisher configuration.
+Qualify the first real OIDC operation with the next reviewed beta release, without
+creating a version only to test this path. No unused publisher should be retained.
+
+npm also created the public `0.0.0-stage` placeholder. `beta` selects the SDK;
+`latest` still selects that placeholder. Do not promote a prerelease to `latest`.
+
 The workflow runs only through `workflow_dispatch` on protected `main` in
 `pomeloanalytics/pomelo-js`. Before dispatch, approve the exact `version`,
 `source_sha` and `expected_sha256` inputs. The source SHA must be the dispatched
 main commit, its current remote head and the target of `api-v<version>`.
 The package is built with Node 24.22.1 and its bundled npm 11.19.1. The prepare
-job has read permissions only; it runs `npm ci --ignore-scripts`, the existing
+job accepts only SemVer prereleases of the form `X.Y.Z-beta.N`, matching the
+reviewed package manifest. It cannot republish an existing version.
+It has read permissions only and runs `npm ci --ignore-scripts`, the existing
 checks and package audit, then verifies the 16 allowed tarball files and approved
 SHA256 before uploading the exact tarball.
 
