@@ -2,11 +2,16 @@
 
 This workspace contains the server-side TypeScript client for the Pomelo Analytics API.
 
-The initial `@pomeloanalytics/api` package is being prepared as `0.1.0-beta.0`.
-It has not been published. The source is licensed under MIT.
-The API package contains release candidate metadata for public npm access under
-the `beta` tag. The workspace remains private. Publishing requires a separate
-owner GO; see [release preparation](CONTRIBUTING.md#release-preparation).
+The initial `@pomeloanalytics/api` beta is `0.1.0-beta.0`, licensed under MIT.
+
+```sh
+npm install @pomeloanalytics/api@beta
+```
+
+Use the explicit `beta` tag. npm created a `0.0.0-stage` placeholder during
+bootstrap; no SDK version has been promoted to `latest`.
+Future releases require approval of their exact source and tarball;
+see [release preparation](CONTRIBUTING.md#release-preparation).
 
 Node.js 22.13+ on the Node 22 release line and Node.js 24 are supported targets.
 The package uses ESM and the built-in Fetch API. It has no runtime dependencies.
