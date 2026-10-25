@@ -36,7 +36,8 @@ API package has publishable metadata, selecting the public npm registry, public
 access, and the `beta` tag. The workspace remains private. Merging source or
 packing a tarball does not authorize publication. A separate owner GO must name
 the reviewed source commit and tarball checksum before any bootstrap or staging
-operation. There is no publication workflow in this repository.
+operation. The [manual release workflow](docs/releasing.md) stages the approved
+API beta only; a maintainer must approve the staged package outside the workflow.
 
 The package must exist on npm before [trusted publishing can be configured](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
 Treat bootstrap as a one-time owner-approved operation: even
