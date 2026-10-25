@@ -88,8 +88,8 @@ test('invalid success JSON is a transport error', async () => {
   });
 });
 
-for (const payload of [null, 'unexpected', 12, true]) {
-  test(`rejects non-object success payload ${String(payload)}`, async () => {
+for (const payload of [null, 'unexpected', 12, true, []]) {
+  test(`rejects non-object success payload ${JSON.stringify(payload)}`, async () => {
     const { transport } = fixture(payload);
     await assert.rejects(transport.get('/v1/me', {}), { code: 'INVALID_RESPONSE' });
   });

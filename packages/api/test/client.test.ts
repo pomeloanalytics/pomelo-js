@@ -92,6 +92,12 @@ test('typed response preserves partial availability, opaque IDs, charging and ad
   assert.deepEqual(response.metadata.metering, meta);
 });
 
+test('typed facade rejects an array in place of an API response object', async () => {
+  const { client, urls } = mock([]);
+  await assert.rejects(client.sites.list(), { code: 'INVALID_RESPONSE' });
+  assert.equal(urls.length, 1);
+});
+
 test('optional query values remain omitted and server defaults are not materialized', async () => {
   const { client, urls } = mock();
   await client.metrics.timeseries({ siteId });

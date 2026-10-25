@@ -114,8 +114,8 @@ export class Transport {
         if ((!headerId || !identifier.test(headerId)) && bodyId) metadata = { ...metadata, requestId: bodyId };
         throw new PomeloApiError(response.status, code, metadata, envelope?.details, payload);
       }
-      if (payload === null || typeof payload !== 'object') throw new PomeloTransportError('INVALID_RESPONSE', metadata);
-      if (record(payload) && record(payload.meta)) {
+      if (!record(payload)) throw new PomeloTransportError('INVALID_RESPONSE', metadata);
+      if (record(payload.meta)) {
         metadata = { ...metadata, metering: payload.meta as unknown as NonNullable<ResponseMetadata['metering']> };
       }
       return { data: payload as T, metadata };
