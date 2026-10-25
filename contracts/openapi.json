@@ -155,6 +155,20 @@
           "type": "string"
         }
       },
+      "ReportInclude": {
+        "description": "Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. The deployed configuration must be qualified separately.",
+        "in": "query",
+        "name": "include",
+        "required": false,
+        "schema": {
+          "enum": [
+            "summary",
+            "full",
+            "details"
+          ],
+          "type": "string"
+        }
+      },
       "ReportLimit": {
         "description": "Number of rows returned by top lists for report endpoints.",
         "in": "query",
@@ -371,7 +385,91 @@
         ],
         "type": "object"
       },
-      "AcquisitionReportResponse": {
+      "AcquisitionCoverage": {
+        "properties": {
+          "direct_sessions": {
+            "type": "number"
+          },
+          "direct_share": {
+            "type": "number"
+          },
+          "non_direct_sessions": {
+            "type": "number"
+          },
+          "non_direct_share": {
+            "type": "number"
+          },
+          "tagged_sessions": {
+            "type": "number"
+          },
+          "tagged_share": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "direct_sessions",
+          "non_direct_sessions",
+          "tagged_sessions",
+          "direct_share",
+          "non_direct_share",
+          "tagged_share"
+        ],
+        "type": "object"
+      },
+      "AcquisitionDetailsReportResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserApiAcquisitionReportMeta"
+          },
+          {
+            "properties": {
+              "compare": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UserApiAcquisitionDetailsCurrent"
+                  }
+                ],
+                "nullable": true
+              },
+              "current": {
+                "$ref": "#/components/schemas/UserApiAcquisitionDetailsCurrent"
+              }
+            },
+            "required": [
+              "current",
+              "compare"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "AcquisitionDimensionItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AcquisitionSummaryTotals"
+          },
+          {
+            "properties": {
+              "favicon_url": {
+                "nullable": true,
+                "type": "string"
+              },
+              "share": {
+                "type": "number"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "value",
+              "share"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "AcquisitionFullReportResponse": {
         "allOf": [
           {
             "$ref": "#/components/schemas/UserApiAcquisitionEnvelope"
@@ -388,6 +486,194 @@
             "type": "object"
           }
         ]
+      },
+      "AcquisitionImpact": {
+        "properties": {
+          "channels": {
+            "items": {
+              "properties": {
+                "channel": {
+                  "enum": [
+                    "Direct",
+                    "Search",
+                    "Referral",
+                    "Social",
+                    "Email",
+                    "Paid",
+                    "Other"
+                  ],
+                  "type": "string"
+                },
+                "converted_sessions": {
+                  "type": "number"
+                },
+                "session_conversion_rate": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "channel",
+                "converted_sessions",
+                "session_conversion_rate"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "landing_pages": {
+            "items": {
+              "properties": {
+                "converted_sessions": {
+                  "type": "number"
+                },
+                "path_canon": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "session_conversion_rate": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "path_canon",
+                "converted_sessions",
+                "session_conversion_rate"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "channels",
+          "landing_pages"
+        ],
+        "type": "object"
+      },
+      "AcquisitionLandingPageSummaryItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AcquisitionSummaryTotals"
+          },
+          {
+            "properties": {
+              "page_title": {
+                "nullable": true,
+                "type": "string"
+              },
+              "path_canon": {
+                "nullable": true,
+                "type": "string"
+              },
+              "primary_channel": {
+                "enum": [
+                  "Direct",
+                  "Search",
+                  "Referral",
+                  "Social",
+                  "Email",
+                  "Paid",
+                  "Other"
+                ],
+                "type": "string"
+              },
+              "share": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "path_canon",
+              "share",
+              "primary_channel"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "AcquisitionReportResponse": {
+        "description": "Source response variants selected by the effective Acquisition include mode. Current and comparison use the same shape; availability and metering remain present in every variant.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AcquisitionFullReportResponse"
+          },
+          {
+            "$ref": "#/components/schemas/AcquisitionSummaryReportResponse"
+          },
+          {
+            "$ref": "#/components/schemas/AcquisitionDetailsReportResponse"
+          }
+        ]
+      },
+      "AcquisitionSummaryChannelItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AcquisitionChannelItem"
+          },
+          {
+            "$ref": "#/components/schemas/AcquisitionSummaryTotals"
+          },
+          {
+            "properties": {
+              "share": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "share"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "AcquisitionSummaryReportResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserApiAcquisitionReportMeta"
+          },
+          {
+            "properties": {
+              "compare": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UserApiAcquisitionSummaryCurrent"
+                  }
+                ],
+                "nullable": true
+              },
+              "current": {
+                "$ref": "#/components/schemas/UserApiAcquisitionSummaryCurrent"
+              }
+            },
+            "required": [
+              "current",
+              "compare"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "AcquisitionSummaryTotals": {
+        "properties": {
+          "avg_pages_per_session": {
+            "type": "number"
+          },
+          "avg_session_eng_time_ms": {
+            "type": "number"
+          },
+          "engagement_rate": {
+            "type": "number"
+          },
+          "sessions": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "sessions",
+          "engagement_rate",
+          "avg_pages_per_session",
+          "avg_session_eng_time_ms"
+        ],
+        "type": "object"
       },
       "ActionsCurrent": {
         "properties": {
@@ -3094,6 +3380,68 @@
         ],
         "type": "object"
       },
+      "UserApiAcquisitionDetailsCurrent": {
+        "properties": {
+          "dimensions": {
+            "properties": {
+              "campaigns": {
+                "items": {
+                  "$ref": "#/components/schemas/AcquisitionDimensionItem"
+                },
+                "type": "array"
+              },
+              "mediums": {
+                "items": {
+                  "$ref": "#/components/schemas/AcquisitionDimensionItem"
+                },
+                "type": "array"
+              },
+              "referrers": {
+                "items": {
+                  "$ref": "#/components/schemas/AcquisitionDimensionItem"
+                },
+                "type": "array"
+              },
+              "sources": {
+                "items": {
+                  "$ref": "#/components/schemas/AcquisitionDimensionItem"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "sources",
+              "mediums",
+              "campaigns",
+              "referrers"
+            ],
+            "type": "object"
+          },
+          "goals_configured": {
+            "type": "boolean"
+          },
+          "impact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AcquisitionImpact"
+              }
+            ],
+            "nullable": true
+          },
+          "landing_pages": {
+            "items": {
+              "$ref": "#/components/schemas/AcquisitionLandingPageSummaryItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "goals_configured",
+          "dimensions",
+          "landing_pages"
+        ],
+        "type": "object"
+      },
       "UserApiAcquisitionEnvelope": {
         "properties": {
           "availability": {
@@ -3119,6 +3467,84 @@
           "compare",
           "range",
           "availability"
+        ],
+        "type": "object"
+      },
+      "UserApiAcquisitionReportMeta": {
+        "properties": {
+          "availability": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MeteredMeta"
+          },
+          "range": {
+            "$ref": "#/components/schemas/Range"
+          }
+        },
+        "required": [
+          "range",
+          "availability",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "UserApiAcquisitionSummaryCurrent": {
+        "properties": {
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/AcquisitionSummaryChannelItem"
+            },
+            "type": "array"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/AcquisitionCoverage"
+          },
+          "goals_configured": {
+            "type": "boolean"
+          },
+          "mix_timeseries": {
+            "items": {
+              "properties": {
+                "channel": {
+                  "enum": [
+                    "Direct",
+                    "Search",
+                    "Referral",
+                    "Social",
+                    "Email",
+                    "Paid",
+                    "Other"
+                  ],
+                  "type": "string"
+                },
+                "date": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "sessions": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "date",
+                "channel",
+                "sessions"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/AcquisitionSummaryTotals"
+          }
+        },
+        "required": [
+          "goals_configured",
+          "totals",
+          "coverage",
+          "mix_timeseries",
+          "channels"
         ],
         "type": "object"
       },
@@ -3709,7 +4135,7 @@
     },
     "/v1/reports/acquisition": {
       "get": {
-        "description": "Mixed route family. The strict-safe slice exposes channels, host-only\nreferrers, and landing pages. Attribution slices such as sources,\nmediums, and campaigns remain profile-gated. Read\n`availability.readModel` for the route split, then inspect\n`availability.sections` as `acquisition_attribution`.\n",
+        "description": "Mixed route family. The strict-safe slice exposes channels, host-only\nreferrers, and landing pages. Attribution slices such as sources,\nmediums, and campaigns remain profile-gated. Read\n`availability.readModel` for the route split, then inspect\n`availability.sections` as `acquisition_attribution`.\n`include=summary` returns `current.channels`, coverage and mix timeseries.\n`full` returns `current.by_channel` and top lists. `details` returns\ndimensions, landing pages and optional goal impact; it is a distinct\nAcquisition variant, not the Content alias for full.\n",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestIdHeader"
@@ -3734,6 +4160,9 @@
           },
           {
             "$ref": "#/components/parameters/ReportLimit"
+          },
+          {
+            "$ref": "#/components/parameters/ReportInclude"
           }
         ],
         "responses": {
@@ -3792,7 +4221,7 @@
     },
     "/v1/reports/actions": {
       "get": {
-        "description": "Mixed route family. The strict-safe slice covers bounded simple actions\n(`ui.click`, `outbound.click`, `file.download`, `form.submit`). Richer\nfamilies such as goals, errors, and custom events remain profile-gated\nand are marked through `availability.sections` as `actions_advanced`.\nUse `availability.readModel` to distinguish the stable baseline from\nthe enriched families unlocked by `Extended`.\n",
+        "description": "Mixed route family. The strict-safe slice covers bounded simple actions\n(`ui.click`, `outbound.click`, `file.download`, `form.submit`). Richer\nfamilies such as goals, errors, and custom events remain profile-gated\nand are marked through `availability.sections` as `actions_advanced`.\nUse `availability.readModel` to distinguish the stable baseline from\nthe enriched families unlocked by `Extended`.\n`include=summary` keeps aggregate families and timeseries and leaves\naction/context detail lists empty. `full` and `details` request those\ndetail rows using the same Actions response schema.\n",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestIdHeader"
@@ -3817,6 +4246,9 @@
           },
           {
             "$ref": "#/components/parameters/ReportLimit"
+          },
+          {
+            "$ref": "#/components/parameters/ReportInclude"
           },
           {
             "$ref": "#/components/parameters/ActionFamily"

@@ -1,7 +1,7 @@
 {
   "artifact": {
     "path": "openapi.json",
-    "sha256": "831d08342aead4e393265b71ba13668e06303b0a81417e3809a75e17502bc006"
+    "sha256": "ae1698e0862ba4aef8981cc4cfddef2d2780e70deff5eb4a278798dbad30f888"
   },
   "components": {
     "headers": [
@@ -21,6 +21,7 @@
       "FromDate",
       "Interval",
       "Metric",
+      "ReportInclude",
       "ReportLimit",
       "RequestIdHeader",
       "SiteId",
@@ -39,7 +40,16 @@
     ],
     "schemas": [
       "AcquisitionChannelItem",
+      "AcquisitionCoverage",
+      "AcquisitionDetailsReportResponse",
+      "AcquisitionDimensionItem",
+      "AcquisitionFullReportResponse",
+      "AcquisitionImpact",
+      "AcquisitionLandingPageSummaryItem",
       "AcquisitionReportResponse",
+      "AcquisitionSummaryChannelItem",
+      "AcquisitionSummaryReportResponse",
+      "AcquisitionSummaryTotals",
       "ActionsCurrent",
       "ActionsReportResponse",
       "AnalyticsUnavailableErrorBody",
@@ -103,7 +113,10 @@
       "UsageHistoryResponse",
       "UsageMeta",
       "UserApiAcquisitionCurrent",
+      "UserApiAcquisitionDetailsCurrent",
       "UserApiAcquisitionEnvelope",
+      "UserApiAcquisitionReportMeta",
+      "UserApiAcquisitionSummaryCurrent",
       "UserApiActionsEnvelope",
       "UserApiContentFullEnvelope",
       "UserApiContentSummaryEnvelope",
@@ -180,7 +193,7 @@
   ],
   "policy": {
     "path": "openapi/public-export-policy.json",
-    "sha256": "234c3e5fb8d5a2f165640c8771ba821ed163a190339b48bddc7f3be40281faa5",
+    "sha256": "5b69aa22a258c2dd2fc2098b1ab4fdf055ce587e0fc60ee4f2209e6dd44564f3",
     "version": 1
   },
   "projections": [
@@ -222,9 +235,9 @@
   ],
   "proof": "Source-only projection; no deployed artifact or authenticated runtime verification.",
   "source": {
-    "commit": "af592b1ee1af5d895094d1253cf1c0e1ee4f00f4",
+    "commit": "c24a0406a6f792972cb69484bbf3df8e0a4a8507",
     "path": "openapi/v1.yaml",
-    "sha256": "4582f733f85e04b113df6df7aad0549286e354f32ab4002e94e4f05233387838"
+    "sha256": "5f7354fa6ca5109fb091cd173d3c2b59c17ab8b560737a04f66720c8ce3bb0b4"
   },
   "version": 1
 }
