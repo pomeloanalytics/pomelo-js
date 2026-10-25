@@ -2,9 +2,7 @@
 
 Server-side TypeScript client for the Pomelo Analytics API.
 
-Release candidate: `0.1.0-beta.0`. MIT licensed. Not published.
-Its npm metadata selects public access and the `beta` tag. Publishing requires a
-separate owner GO for the reviewed tarball; no publication workflow is configured.
+Beta version: `0.1.0-beta.0`. MIT licensed.
 
 Use Node.js 22.13+ on the Node 22 release line or Node.js 24. The package uses ESM
 and has no runtime dependencies. CommonJS consumers on these supported Node
@@ -12,6 +10,12 @@ versions can use `require('@pomeloanalytics/api')` to load the same ESM build.
 Keep the API token in server-side configuration.
 Importing the package is safe during SSR; using it in a browser is rejected before
 fetch is called.
+
+## Installation
+
+```sh
+npm install @pomeloanalytics/api@beta
+```
 
 ## Usage
 
@@ -145,7 +149,6 @@ npm pack --workspace @pomeloanalytics/api --ignore-scripts --pack-destination .a
 
 Install that tarball into another Node ESM project with
 `npm install /path/to/pomeloanalytics-api-0.1.0-beta.0.tgz`.
-There is no registry installation to use before an approved publication.
 
 The repository includes a server example and a runnable synthetic consumer.
 The package audit compiles and executes the synthetic consumer in a fresh
