@@ -32,11 +32,14 @@ async function scan(directory) {
 
 try {
   await scan(root);
+  const workspace = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+  assert.equal(workspace.private, true, 'The workspace must remain private.');
   const manifest = JSON.parse(await readFile(join(packageDir, 'package.json'), 'utf8'));
   assert.equal(manifest.name, '@pomeloanalytics/api');
   assert.equal(manifest.version, '0.1.0-beta.0');
-  assert.equal(manifest.private, true, 'Keep publication blocked until the owner approves release setup.');
-  assert.match(manifest.scripts?.prepublishOnly ?? '', /throw new Error/, 'Keep the explicit publication guard.');
+  assert.equal(manifest.private, undefined, 'The API release candidate must be publishable.');
+  assert.equal(manifest.scripts?.prepublishOnly, undefined, 'The API release candidate must have no blocking publication hook.');
+  assert.deepEqual(manifest.publishConfig, { registry: 'https://registry.npmjs.org/', access: 'public', tag: 'beta' });
   assert.deepEqual(manifest.files, ['dist', 'README.md', 'CHANGELOG.md', 'LICENSE']);
   assert.deepEqual(manifest.exports, { '.': { types: './dist/index.d.ts', import: './dist/index.js', default: './dist/index.js' } });
   assert.equal(Object.keys(manifest.dependencies ?? {}).length, 0, 'The API package must have no runtime dependencies.');
