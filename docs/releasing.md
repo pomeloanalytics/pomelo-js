@@ -1,7 +1,7 @@
 # Release preparation
 
-The API package is prepared as `0.1.0-beta.0` under MIT. It is not published.
-The release candidate has publishable metadata for the public npm registry with
+The API package's initial beta version is `0.1.0-beta.0` under MIT.
+Its publication metadata selects the public npm registry with
 public access and the `beta` tag. The workspace remains `private: true`.
 There is no release workflow or registry credential in this repository.
 
@@ -58,8 +58,9 @@ and [trusted publishing guide](https://docs.npmjs.com/trusted-publishers/).
 ## Versioning and acceptance
 
 Version packages independently with SemVer and their own changelogs. The initial
-API prerelease uses the `beta` dist-tag and `api-v0.1.0-beta.0` source tag. Neither
-tag has been created. An API route version, OpenAPI info version, npm version
+API prerelease uses the `beta` dist-tag and `api-v0.1.0-beta.0` source tag. Verify
+that the source tag identifies the admitted commit before publication.
+An API route version, OpenAPI info version, npm version
 and CDN script version have separate meanings.
 
 After approved publication, install the exact registry version in a clean app
