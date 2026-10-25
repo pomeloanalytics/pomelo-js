@@ -1,0 +1,143 @@
+name: Stage API beta
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Reviewed API package version
+        type: choice
+        options: ['0.1.0-beta.0']
+        default: '0.1.0-beta.0'
+        required: true
+      source_sha:
+        description: Exact reviewed main commit (40 lowercase hexadecimal characters)
+        type: string
+        required: true
+      expected_sha256:
+        description: Approved tarball SHA256 (64 lowercase hexadecimal characters)
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-api-beta-stage
+  cancel-in-progress: false
+
+env:
+  API_VERSION: ${{ inputs.version }}
+  SOURCE_SHA: ${{ inputs.source_sha }}
+  EXPECTED_SHA256: ${{ inputs.expected_sha256 }}
+
+jobs:
+  prepare:
+    if: github.repository == 'pomeloanalytics/pomelo-js' && github.ref == 'refs/heads/main' && github.ref_protected
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      artifact_id: ${{ steps.tarball.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '24.22.1'
+          package-manager-cache: false
+      - name: Verify reviewed source and version
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import { readFileSync } from 'node:fs';
+          const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
+          assert.ok(/^[a-f0-9]{40}$/.test(process.env.SOURCE_SHA), 'Invalid source SHA');
+          assert.ok(/^[a-f0-9]{64}$/.test(process.env.EXPECTED_SHA256), 'Invalid tarball SHA256');
+          assert.equal(process.env.GITHUB_SHA, process.env.SOURCE_SHA, 'Dispatch source mismatch');
+          assert.equal(git('rev-parse', 'HEAD'), process.env.SOURCE_SHA, 'Checkout source mismatch');
+          assert.equal(git('ls-remote', 'origin', 'refs/heads/main').split(/\s+/)[0], process.env.SOURCE_SHA, 'Main has changed');
+          const pkg = JSON.parse(readFileSync('packages/api/package.json', 'utf8'));
+          assert.equal(pkg.name, '@pomeloanalytics/api');
+          assert.equal(pkg.version, '0.1.0-beta.0');
+          assert.equal(process.env.API_VERSION, pkg.version, 'Package version mismatch');
+          assert.equal(git('rev-parse', `refs/tags/api-v${pkg.version}^{commit}`), process.env.SOURCE_SHA, 'Source tag mismatch');
+          NODE
+      - name: Verify tooling and run existing checks
+        run: |
+          test "$(node --version)" = 'v24.22.1'
+          test "$(npm --version)" = '11.19.1'
+          npm ci --ignore-scripts
+          npm run check
+      - name: Pack and verify approved bytes
+        run: |
+          mkdir -p .artifacts
+          npm pack --workspace @pomeloanalytics/api --ignore-scripts --json --pack-destination .artifacts > "$RUNNER_TEMP/api-pack.json"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync } from 'node:fs';
+          const [pack] = JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/api-pack.json`, 'utf8'));
+          assert.equal(pack.name, '@pomeloanalytics/api');
+          assert.equal(pack.version, process.env.API_VERSION);
+          assert.equal(pack.files.length, 16, 'Unexpected tarball file count');
+          for (const file of pack.files) {
+            assert.ok(/^(?:package\.json|README\.md|CHANGELOG\.md|LICENSE|dist\/[a-zA-Z0-9/_-]+\.(?:js|d\.ts))$/.test(file.path), 'Unexpected tarball member');
+          }
+          const bytes = readFileSync(`.artifacts/${pack.filename}`);
+          assert.equal(createHash('sha256').update(bytes).digest('hex'), process.env.EXPECTED_SHA256, 'Tarball checksum mismatch');
+          NODE
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        id: tarball
+        with:
+          name: api-beta-tarball-${{ github.run_attempt }}
+          path: .artifacts/pomeloanalytics-api-0.1.0-beta.0.tgz
+          if-no-files-found: error
+          retention-days: 7
+
+  stage:
+    needs: prepare
+    if: github.repository == 'pomeloanalytics/pomelo-js' && github.ref == 'refs/heads/main' && github.ref_protected
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: npm-beta
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '24.22.1'
+          package-manager-cache: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.prepare.outputs.artifact_id }}
+          path: candidate
+          merge-multiple: true
+      - name: Verify downloaded candidate
+        run: |
+          test "$(node --version)" = 'v24.22.1'
+          test "$(npm --version)" = '11.19.1'
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync, readdirSync } from 'node:fs';
+          assert.equal(process.env.GITHUB_REF, 'refs/heads/main');
+          assert.equal(process.env.GITHUB_SHA, process.env.SOURCE_SHA, 'Dispatch source mismatch');
+          assert.equal(process.env.API_VERSION, '0.1.0-beta.0');
+          const filename = 'pomeloanalytics-api-0.1.0-beta.0.tgz';
+          assert.deepEqual(readdirSync('candidate'), [filename], 'Unexpected downloaded files');
+          const bytes = readFileSync(`candidate/${filename}`);
+          assert.equal(createHash('sha256').update(bytes).digest('hex'), process.env.EXPECTED_SHA256, 'Downloaded checksum mismatch');
+          NODE
+      - name: Stage the API beta with OIDC and provenance
+        run: |
+          npm stage publish candidate/pomeloanalytics-api-0.1.0-beta.0.tgz --ignore-scripts --tag beta --access public --registry https://registry.npmjs.org/ --provenance --json --loglevel=error > "$RUNNER_TEMP/stage-result.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: api-beta-stage-result-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/stage-result.json
+          if-no-files-found: error
+          retention-days: 1
