@@ -115,6 +115,9 @@ export class Transport {
         throw new PomeloApiError(response.status, code, metadata, envelope?.details, payload);
       }
       if (payload === null || typeof payload !== 'object') throw new PomeloTransportError('INVALID_RESPONSE', metadata);
+      if (record(payload) && record(payload.meta)) {
+        metadata = { ...metadata, metering: payload.meta as unknown as NonNullable<ResponseMetadata['metering']> };
+      }
       return { data: payload as T, metadata };
     } catch (error: unknown) {
       if (error instanceof PomeloApiError || error instanceof PomeloTransportError) throw error;

@@ -25,7 +25,10 @@ npm run check
 temporary project and compiles and runs a consumer smoke test. It never publishes.
 
 Only the reviewed public API description is accepted in `contracts/`. Public
-SDK types are generated from that description. The SDK does not contain the
+SDK types are generated from [contracts/openapi.json](contracts/openapi.json),
+with its SHA256 checked against [contracts/manifest.json](contracts/manifest.json).
+`npm run generate` updates the types; `npm run check:generated` verifies the
+checksum and deterministic output without writing files. The SDK does not contain the
 Pomelo application, infrastructure, deployment tooling, or analytics engine.
 
 The CDN script remains the primary collection installation path. This repository

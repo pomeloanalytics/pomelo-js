@@ -30,7 +30,7 @@ test('sends exactly one authenticated GET and preserves complete response fields
   });
   const result = await transport.get('/v1/me', { site_id: 'site-test', from: '2026-10-01T00:00:00Z', to: undefined }, { requestId: 'client-request' });
   assert.deepEqual(result.data, payload);
-  assert.deepEqual(result.metadata, { requestId: 'server-request', rateLimit: { limit: 120, remaining: 119, reset: 1900000000 } });
+  assert.deepEqual(result.metadata, { requestId: 'server-request', rateLimit: { limit: 120, remaining: 119, reset: 1900000000 }, metering: payload.meta });
   assert.equal(calls.length, 1);
   assert.equal(String(calls[0]?.input), 'https://api.pomeloanalytics.com/v1/me?site_id=site-test&from=2026-10-01T00%3A00%3A00Z');
   const init = calls[0]?.init;

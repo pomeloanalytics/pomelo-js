@@ -23,5 +23,6 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm run check
+      - name: Verify contract, generated types, SDK and isolated consumer
+        run: npm run check
       - run: npm audit --audit-level=high
