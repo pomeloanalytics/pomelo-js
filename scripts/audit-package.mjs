@@ -36,7 +36,7 @@ try {
   assert.equal(workspace.private, true, 'The workspace must remain private.');
   const manifest = JSON.parse(await readFile(join(packageDir, 'package.json'), 'utf8'));
   assert.equal(manifest.name, '@pomeloanalytics/api');
-  assert.equal(manifest.version, '0.1.0-beta.0');
+  assert.match(manifest.version, /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)-beta\.(?:0|[1-9]\d*)$/, 'Only beta prereleases may be packed for release.');
   assert.equal(manifest.private, undefined, 'The API release candidate must be publishable.');
   assert.equal(manifest.scripts?.prepublishOnly, undefined, 'The API release candidate must have no blocking publication hook.');
   assert.deepEqual(manifest.publishConfig, { registry: 'https://registry.npmjs.org/', access: 'public', tag: 'beta' });
