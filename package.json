@@ -1,0 +1,26 @@
+{
+  "name": "pomelo-js-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "MIT",
+  "workspaces": ["packages/*"],
+  "engines": { "node": "^22.13.0 || ^24.0.0" },
+  "scripts": {
+    "generate": "node scripts/generate-types.mjs",
+    "check:generated": "node scripts/generate-types.mjs --check",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.check.json",
+    "build": "npm run build --workspace @pomeloanalytics/api",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js",
+    "audit:package": "node scripts/audit-package.mjs",
+    "check": "npm run lint && npm run typecheck && npm run build && npm test && npm run audit:package"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "eslint": "10.13.0",
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.0"
+  }
+}
