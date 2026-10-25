@@ -1,0 +1,4271 @@
+{
+  "components": {
+    "headers": {
+      "XRateLimitLimit": {
+        "description": "Maximum requests allowed during current short window.",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "XRateLimitRemaining": {
+        "description": "Remaining requests in current short window.",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "XRateLimitReset": {
+        "description": "Unix timestamp when short window resets.",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "XRequestId": {
+        "description": "Request identifier for troubleshooting.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "parameters": {
+      "ActionFamily": {
+        "description": "Filter action reports by normalized action family.",
+        "in": "query",
+        "name": "action_family",
+        "required": false,
+        "schema": {
+          "enum": [
+            "goals",
+            "forms",
+            "outbound",
+            "downloads",
+            "errors",
+            "custom",
+            "instrumentation"
+          ],
+          "type": "string"
+        }
+      },
+      "ActionKey": {
+        "description": "Filter action reports by normalized action key.",
+        "in": "query",
+        "name": "action_key",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "BreakdownDimension": {
+        "description": "Grouping dimension for breakdown endpoint.\nWhen `dimension=tenant`, rows are grouped by stable `tenant_id`. The\nresponse also includes `tenant_slug` and `tenant_name` as display labels.\n",
+        "in": "query",
+        "name": "dimension",
+        "required": false,
+        "schema": {
+          "enum": [
+            "device",
+            "referrer",
+            "page",
+            "browser",
+            "os",
+            "tenant"
+          ],
+          "type": "string"
+        }
+      },
+      "BreakdownLimit": {
+        "description": "Number of rows returned by breakdown endpoint.",
+        "in": "query",
+        "name": "limit",
+        "required": false,
+        "schema": {
+          "default": 100,
+          "maximum": 500,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "CompareParam": {
+        "description": "Compare current range against the previous equivalent period.",
+        "in": "query",
+        "name": "compare",
+        "required": false,
+        "schema": {
+          "enum": [
+            "prev_period"
+          ],
+          "type": "string"
+        }
+      },
+      "ContentInclude": {
+        "description": "Content response depth. `summary` returns totals and one global UTC\npageview point per day; `limit` has no effect. `full` returns the\ndetailed Content report. `details` is a deprecated alias for `full`.\nWhen omitted, ranges up to 90 days use `full`; ranges from 91 through\n365 days use `summary`.\n",
+        "in": "query",
+        "name": "include",
+        "required": false,
+        "schema": {
+          "enum": [
+            "summary",
+            "full",
+            "details"
+          ],
+          "type": "string"
+        }
+      },
+      "Filters": {
+        "description": "JSON object serialized as string, example:\n`{\"device\":\"mobile\",\"referrer\":\"google.com\"}`.\n",
+        "in": "query",
+        "name": "filters",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "FromDate": {
+        "description": "Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period.",
+        "in": "query",
+        "name": "from",
+        "required": false,
+        "schema": {
+          "format": "date",
+          "type": "string"
+        }
+      },
+      "Interval": {
+        "description": "Granularity (`hour` can require higher plan).",
+        "in": "query",
+        "name": "interval",
+        "required": false,
+        "schema": {
+          "enum": [
+            "day",
+            "hour"
+          ],
+          "type": "string"
+        }
+      },
+      "Metric": {
+        "description": "Metric to aggregate (default `pageviews`). `sessions` uses the same\nvisit model as the dashboard: a `visit_id` starts from the\nprivacy-preserving daily visitor key and is split after 30 minutes of\ninactivity.\n",
+        "in": "query",
+        "name": "metric",
+        "required": false,
+        "schema": {
+          "enum": [
+            "pageviews",
+            "sessions",
+            "events"
+          ],
+          "type": "string"
+        }
+      },
+      "ReportLimit": {
+        "description": "Number of rows returned by top lists for report endpoints.",
+        "in": "query",
+        "name": "limit",
+        "required": false,
+        "schema": {
+          "default": 200,
+          "maximum": 2000,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "RequestIdHeader": {
+        "description": "Optional idempotency/request correlation identifier.",
+        "in": "header",
+        "name": "X-Request-Id",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "SiteId": {
+        "in": "query",
+        "name": "site_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "TenantId": {
+        "description": "Stable tenant identifier. Use this for tenant-scoped analytics and\ntenant-scoped access control. `site_id` identifies the shared product,\n`tenant_id` identifies one tenant.\n",
+        "in": "query",
+        "name": "tenant_id",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "ToDate": {
+        "description": "Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today.",
+        "in": "query",
+        "name": "to",
+        "required": false,
+        "schema": {
+          "format": "date",
+          "type": "string"
+        }
+      },
+      "TrafficParam": {
+        "description": "Traffic segment to include.",
+        "in": "query",
+        "name": "traffic",
+        "required": false,
+        "schema": {
+          "default": "humans",
+          "enum": [
+            "humans",
+            "humans_including_ai",
+            "bots_only",
+            "ai_bots_only",
+            "all"
+          ],
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "AnalyticsUnavailable": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AnalyticsUnavailableErrorResponse"
+            }
+          }
+        },
+        "description": "Analytics serving timed out (`ANALYTICS_DB_TIMEOUT`) or is temporarily\nunavailable (`ANALYTICS_DB_UNAVAILABLE`).\n",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/XRateLimitLimit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/XRateLimitRemaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/XRateLimitReset"
+          },
+          "X-Request-Id": {
+            "$ref": "#/components/headers/XRequestId"
+          }
+        }
+      },
+      "Forbidden": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        },
+        "description": "Token scope/site/plan does not allow this request.",
+        "headers": {
+          "X-Request-Id": {
+            "$ref": "#/components/headers/XRequestId"
+          }
+        }
+      },
+      "HardCapReached": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        },
+        "description": "Billing hard cap reached for current month.",
+        "headers": {
+          "X-Request-Id": {
+            "$ref": "#/components/headers/XRequestId"
+          }
+        }
+      },
+      "InvalidParams": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        },
+        "description": "Request parameters are invalid.",
+        "headers": {
+          "X-Request-Id": {
+            "$ref": "#/components/headers/XRequestId"
+          }
+        }
+      },
+      "RateLimited": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        },
+        "description": "Request was throttled.",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/XRateLimitLimit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/XRateLimitRemaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/XRateLimitReset"
+          },
+          "X-Request-Id": {
+            "$ref": "#/components/headers/XRequestId"
+          }
+        }
+      },
+      "ReportAvailabilityConflict": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        },
+        "description": "The requested route family is not available for the current\n`collection_profile`, or the requested period does not contain the\nrequired Extended data envelope.\n",
+        "headers": {
+          "X-Request-Id": {
+            "$ref": "#/components/headers/XRequestId"
+          }
+        }
+      },
+      "Unauthorized": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        },
+        "description": "Invalid or revoked API token.",
+        "headers": {
+          "X-Request-Id": {
+            "$ref": "#/components/headers/XRequestId"
+          }
+        }
+      }
+    },
+    "schemas": {
+      "AcquisitionChannelItem": {
+        "properties": {
+          "channel": {
+            "enum": [
+              "Direct",
+              "Search",
+              "Referral",
+              "Social",
+              "Email",
+              "Paid",
+              "Other"
+            ],
+            "type": "string"
+          },
+          "sessions": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "channel",
+          "sessions"
+        ],
+        "type": "object"
+      },
+      "AcquisitionReportResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserApiAcquisitionEnvelope"
+          },
+          {
+            "properties": {
+              "meta": {
+                "$ref": "#/components/schemas/MeteredMeta"
+              }
+            },
+            "required": [
+              "meta"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ActionsCurrent": {
+        "properties": {
+          "actions": {
+            "description": "Exact action rows for the active envelope. On Strict sites, this\nlist is limited to bounded simple actions and stays readable in\nHTTP `200`; advanced families remain section-gated.\n",
+            "items": {
+              "properties": {
+                "action_id": {
+                  "description": "Stable element/action identifier when the action row can be narrowed by it.",
+                  "nullable": true,
+                  "type": "string"
+                },
+                "action_key": {
+                  "type": "string"
+                },
+                "action_name": {
+                  "type": "string"
+                },
+                "action_target_host": {
+                  "description": "Target host when the action row can be narrowed by outbound or download target.",
+                  "nullable": true,
+                  "type": "string"
+                },
+                "event_name": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "family": {
+                  "enum": [
+                    "goals",
+                    "forms",
+                    "outbound",
+                    "downloads",
+                    "errors",
+                    "custom",
+                    "instrumentation"
+                  ],
+                  "type": "string"
+                },
+                "form_action_path": {
+                  "description": "Form action path when the form action row can be narrowed by it.",
+                  "nullable": true,
+                  "type": "string"
+                },
+                "form_id": {
+                  "description": "Form identifier when the form action row can be narrowed by it.",
+                  "nullable": true,
+                  "type": "string"
+                },
+                "occurrences": {
+                  "type": "number"
+                },
+                "sessions": {
+                  "type": "number"
+                },
+                "top_page": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "top_source": {
+                  "enum": [
+                    "Direct",
+                    "Search",
+                    "Referral",
+                    "Social",
+                    "Email",
+                    "Paid",
+                    "Other"
+                  ],
+                  "nullable": true,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "action_key",
+                "action_name",
+                "family",
+                "sessions",
+                "occurrences"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "active_family": {
+            "enum": [
+              "goals",
+              "forms",
+              "outbound",
+              "downloads",
+              "errors",
+              "custom",
+              "instrumentation"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "context": {
+            "description": "Shared breakdown context for the active action envelope. Advanced\naction families can remain unavailable even when the route itself\nsucceeds; inspect `availability.sections`.\n",
+            "properties": {
+              "pages": {
+                "items": {
+                  "properties": {
+                    "path_canon": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "scope": {
+                      "enum": [
+                        "family",
+                        "action"
+                      ],
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "scope",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "segments": {
+                "items": {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "device",
+                        "country",
+                        "browser"
+                      ],
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "enum": [
+                        "family",
+                        "action"
+                      ],
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "scope",
+                    "kind",
+                    "label",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "sources": {
+                "items": {
+                  "properties": {
+                    "channel": {
+                      "enum": [
+                        "Direct",
+                        "Search",
+                        "Referral",
+                        "Social",
+                        "Email",
+                        "Paid",
+                        "Other"
+                      ],
+                      "type": "string"
+                    },
+                    "scope": {
+                      "enum": [
+                        "family",
+                        "action"
+                      ],
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "scope",
+                    "channel",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "pages",
+              "sources",
+              "segments"
+            ],
+            "type": "object"
+          },
+          "families": {
+            "description": "Family summary for the current action envelope. On Strict sites,\nsimple bounded families remain available; richer families are\nexposed through `availability.sections` as `actions_advanced`.\n",
+            "items": {
+              "properties": {
+                "family": {
+                  "enum": [
+                    "goals",
+                    "forms",
+                    "outbound",
+                    "downloads",
+                    "errors",
+                    "custom",
+                    "instrumentation"
+                  ],
+                  "type": "string"
+                },
+                "occurrences": {
+                  "type": "number"
+                },
+                "sessions": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "family",
+                "sessions",
+                "occurrences"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "family_timeseries": {
+            "items": {
+              "properties": {
+                "date": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "family": {
+                  "enum": [
+                    "goals",
+                    "forms",
+                    "outbound",
+                    "downloads",
+                    "errors",
+                    "custom",
+                    "instrumentation"
+                  ],
+                  "type": "string"
+                },
+                "occurrences": {
+                  "type": "number"
+                },
+                "sessions": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "date",
+                "family",
+                "sessions",
+                "occurrences"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "goals_configured": {
+            "type": "boolean"
+          },
+          "timeseries": {
+            "items": {
+              "properties": {
+                "date": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "error_sessions": {
+                  "type": "number"
+                },
+                "instrumentation_sessions": {
+                  "type": "number"
+                },
+                "meaningful_action_sessions": {
+                  "type": "number"
+                },
+                "meaningful_occurrences": {
+                  "type": "number"
+                },
+                "total_sessions": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "date",
+                "total_sessions",
+                "meaningful_action_sessions",
+                "meaningful_occurrences",
+                "error_sessions",
+                "instrumentation_sessions"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totals": {
+            "properties": {
+              "error_sessions": {
+                "type": "number"
+              },
+              "instrumentation_sessions": {
+                "type": "number"
+              },
+              "meaningful_action_sessions": {
+                "type": "number"
+              },
+              "meaningful_occurrences": {
+                "type": "number"
+              },
+              "total_sessions": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "total_sessions",
+              "meaningful_action_sessions",
+              "meaningful_occurrences",
+              "error_sessions",
+              "instrumentation_sessions"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "goals_configured",
+          "active_family",
+          "totals",
+          "families",
+          "timeseries",
+          "family_timeseries",
+          "actions",
+          "context"
+        ],
+        "type": "object"
+      },
+      "ActionsReportResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserApiActionsEnvelope"
+          },
+          {
+            "properties": {
+              "meta": {
+                "$ref": "#/components/schemas/MeteredMeta"
+              }
+            },
+            "required": [
+              "meta"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "AnalyticsUnavailableErrorBody": {
+        "properties": {
+          "code": {
+            "enum": [
+              "ANALYTICS_DB_TIMEOUT",
+              "ANALYTICS_DB_UNAVAILABLE"
+            ],
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object"
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id"
+        ],
+        "type": "object"
+      },
+      "AnalyticsUnavailableErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/AnalyticsUnavailableErrorBody"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "BreakdownResponse": {
+        "properties": {
+          "availability": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MeteredMeta"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/BreakdownRow"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows",
+          "availability",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "BreakdownRow": {
+        "properties": {
+          "key": {
+            "description": "Breakdown key. When `dimension=tenant`, this is the stable\n`tenant_id`.\n",
+            "type": "string"
+          },
+          "tenant_id": {
+            "description": "Stable tenant identifier for tenant breakdown rows.",
+            "nullable": true,
+            "type": "string"
+          },
+          "tenant_name": {
+            "description": "Current display name for tenant breakdown rows.",
+            "nullable": true,
+            "type": "string"
+          },
+          "tenant_slug": {
+            "description": "Current routing slug for tenant breakdown rows.",
+            "nullable": true,
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
+      "ContentFullCurrent": {
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "items": {
+              "properties": {
+                "bounce_rate": {
+                  "type": "number"
+                },
+                "entries": {
+                  "type": "number"
+                },
+                "page_title": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "path_canon": {
+                  "nullable": true,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path_canon",
+                "entries",
+                "bounce_rate"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "exits": {
+            "items": {
+              "properties": {
+                "exit_rate": {
+                  "type": "number"
+                },
+                "exits": {
+                  "type": "number"
+                },
+                "page_title": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "path_canon": {
+                  "nullable": true,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path_canon",
+                "exits",
+                "exit_rate"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "include": {
+            "enum": [
+              "full"
+            ],
+            "type": "string"
+          },
+          "pages": {
+            "items": {
+              "properties": {
+                "avg_page_eng_time_ms": {
+                  "type": "number"
+                },
+                "avg_scroll_depth": {
+                  "nullable": true,
+                  "type": "number"
+                },
+                "bounces": {
+                  "type": "number"
+                },
+                "entries": {
+                  "type": "number"
+                },
+                "exit_rate": {
+                  "type": "number"
+                },
+                "exits": {
+                  "type": "number"
+                },
+                "page_bounce_rate": {
+                  "type": "number"
+                },
+                "page_title": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "pageviews": {
+                  "type": "number"
+                },
+                "path_canon": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "performance": {
+                  "nullable": true,
+                  "properties": {
+                    "p75_cls": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "p75_fcp": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "p75_inp": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "p75_lcp": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "p75_ttfb": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "samples": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "samples",
+                    "p75_lcp",
+                    "p75_inp",
+                    "p75_cls",
+                    "p75_ttfb"
+                  ],
+                  "type": "object"
+                },
+                "unique_pageviews": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "path_canon",
+                "pageviews",
+                "unique_pageviews",
+                "entries",
+                "bounces",
+                "exits",
+                "page_bounce_rate",
+                "exit_rate",
+                "avg_page_eng_time_ms"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "timeseries": {
+            "items": {
+              "properties": {
+                "date": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "pageviews": {
+                  "type": "number"
+                },
+                "path_canon": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "date",
+                "path_canon",
+                "pageviews"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/ContentTotals"
+          }
+        },
+        "required": [
+          "include",
+          "totals",
+          "pages",
+          "timeseries"
+        ],
+        "type": "object"
+      },
+      "ContentFullReportResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserApiContentFullEnvelope"
+          },
+          {
+            "properties": {
+              "meta": {
+                "$ref": "#/components/schemas/MeteredMeta"
+              }
+            },
+            "required": [
+              "meta"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ContentReportResponse": {
+        "description": "Discriminated response union selected by `current.include`. Current and\ncompare always use the same Content mode.\n",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ContentSummaryReportResponse"
+          },
+          {
+            "$ref": "#/components/schemas/ContentFullReportResponse"
+          }
+        ]
+      },
+      "ContentSummaryCurrent": {
+        "additionalProperties": false,
+        "properties": {
+          "include": {
+            "enum": [
+              "summary"
+            ],
+            "type": "string"
+          },
+          "timeseries": {
+            "description": "Dense, strictly increasing UTC daily series. It contains exactly\none point per requested day, including zero-valued empty days, and\nits pageview sum equals `totals.pageviews`.\n",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "date": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "pageviews": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "date",
+                "pageviews"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/ContentTotals"
+          }
+        },
+        "required": [
+          "include",
+          "totals",
+          "timeseries"
+        ],
+        "type": "object"
+      },
+      "ContentSummaryReportResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserApiContentSummaryEnvelope"
+          },
+          {
+            "properties": {
+              "meta": {
+                "$ref": "#/components/schemas/MeteredMeta"
+              }
+            },
+            "required": [
+              "meta"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ContentTotals": {
+        "properties": {
+          "avg_page_eng_time_ms": {
+            "type": "number"
+          },
+          "bounce_rate": {
+            "type": "number"
+          },
+          "entries": {
+            "type": "number"
+          },
+          "exit_rate": {
+            "type": "number"
+          },
+          "pageviews": {
+            "type": "number"
+          },
+          "unique_pageviews": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "pageviews",
+          "unique_pageviews",
+          "entries",
+          "bounce_rate",
+          "avg_page_eng_time_ms",
+          "exit_rate"
+        ],
+        "type": "object"
+      },
+      "DerivedProductCapability": {
+        "properties": {
+          "data_envelope": {
+            "enum": [
+              "strict",
+              "extended",
+              "mixed"
+            ],
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "guardrailed",
+              "advanced",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "maturity": {
+            "enum": [
+              "implemented",
+              "partially_implemented",
+              "not_explicitly_split",
+              "not_applicable"
+            ],
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "level",
+          "data_envelope",
+          "maturity",
+          "notes"
+        ],
+        "type": "object"
+      },
+      "EffectiveProductCapabilities": {
+        "properties": {
+          "acquisition": {
+            "$ref": "#/components/schemas/DerivedProductCapability"
+          },
+          "advanced_actions": {
+            "$ref": "#/components/schemas/DerivedProductCapability"
+          },
+          "api": {
+            "$ref": "#/components/schemas/DerivedProductCapability"
+          },
+          "collection": {
+            "$ref": "#/components/schemas/DerivedProductCapability"
+          },
+          "dashboard_surfaces": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "exports": {
+            "$ref": "#/components/schemas/DerivedProductCapability"
+          },
+          "multi_tenant": {
+            "$ref": "#/components/schemas/DerivedProductCapability"
+          },
+          "reports": {
+            "$ref": "#/components/schemas/DerivedProductCapability"
+          }
+        },
+        "required": [
+          "collection",
+          "reports",
+          "dashboard_surfaces",
+          "acquisition",
+          "advanced_actions",
+          "multi_tenant",
+          "exports",
+          "api"
+        ],
+        "type": "object"
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "enum": [
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "INVALID_METHOD",
+              "INVALID_PARAMS",
+              "RETENTION_EXCEEDED",
+              "RATE_LIMITED",
+              "HARD_CAP_REACHED",
+              "REPORT_LOCKED_BY_PROFILE",
+              "REPORT_NOT_AVAILABLE_FOR_REQUESTED_PERIOD",
+              "REPORT_RESPONSE_TOO_LARGE",
+              "INTERNAL_ERROR",
+              "NOT_FOUND"
+            ],
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object"
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id"
+        ],
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "Goal": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/UserApiGoalFilters"
+          },
+          "goalId": {
+            "type": "string"
+          },
+          "intent": {
+            "enum": [
+              "lead",
+              "signup",
+              "purchase",
+              "download",
+              "outbound",
+              "content",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "orgId": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "siteId": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "PAGEVIEW_MATCH",
+              "EVENT_MATCH"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "goalId",
+          "siteId",
+          "orgId",
+          "name",
+          "type",
+          "intent",
+          "pattern",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "GoalListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Goal"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "GoalsConversionsCurrent": {
+        "properties": {
+          "goals": {
+            "items": {
+              "properties": {
+                "conversions": {
+                  "type": "number"
+                },
+                "goal_id": {
+                  "type": "string"
+                },
+                "last_seen_at": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "total_sessions": {
+                  "type": "number"
+                },
+                "unique_sessions": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "goal_id",
+                "conversions",
+                "unique_sessions",
+                "total_sessions",
+                "last_seen_at"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "goals"
+        ],
+        "type": "object"
+      },
+      "GoalsConversionsEnvelope": {
+        "properties": {
+          "availability": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "compare": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalsConversionsCurrent"
+              }
+            ],
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/GoalsConversionsCurrent"
+          },
+          "range": {
+            "$ref": "#/components/schemas/Range"
+          }
+        },
+        "required": [
+          "current",
+          "compare",
+          "range",
+          "availability"
+        ],
+        "type": "object"
+      },
+      "GoalsConversionsResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GoalsConversionsEnvelope"
+          },
+          {
+            "properties": {
+              "meta": {
+                "$ref": "#/components/schemas/MeteredMeta"
+              }
+            },
+            "required": [
+              "meta"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "MeResponse": {
+        "properties": {
+          "docs_url": {
+            "format": "uri",
+            "type": "string"
+          },
+          "org_id": {
+            "type": "string"
+          },
+          "plan_id": {
+            "deprecated": true,
+            "description": "Deprecated compatibility mirror of `product.runtime_plan_id`. The canonical product object is `product`. This field is retained for compatibility and must not be used by new integrations. It remains returned as a deprecated mirror; no sunset date has been announced.\n",
+            "enum": [
+              "free",
+              "starter",
+              "pro"
+            ],
+            "type": "string"
+          },
+          "product": {
+            "$ref": "#/components/schemas/WorkspaceProductConfiguration"
+          },
+          "quotas": {
+            "$ref": "#/components/schemas/Quotas"
+          },
+          "rate_limits": {
+            "properties": {
+              "rps": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "rps"
+            ],
+            "type": "object"
+          },
+          "retention_days": {
+            "deprecated": true,
+            "description": "Deprecated compatibility mirror of `product.product_retention.api_retention_days`. This field is retained for compatibility and must not be used by new integrations. It remains returned as a deprecated mirror; no sunset date has been announced.\n",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "org_id",
+          "plan_id",
+          "retention_days",
+          "quotas",
+          "rate_limits",
+          "docs_url",
+          "product"
+        ],
+        "type": "object"
+      },
+      "MeteredMeta": {
+        "properties": {
+          "billable_overage": {
+            "type": "boolean"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "surface": {
+            "$ref": "#/components/schemas/SurfaceMeta"
+          },
+          "units_charged": {
+            "type": "integer"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/UsageMeta"
+          }
+        },
+        "required": [
+          "request_id",
+          "units_charged",
+          "billable_overage",
+          "usage"
+        ],
+        "type": "object"
+      },
+      "OverviewCurrent": {
+        "properties": {
+          "acquisition": {
+            "properties": {
+              "by_channel": {
+                "items": {
+                  "$ref": "#/components/schemas/AcquisitionChannelItem"
+                },
+                "type": "array"
+              },
+              "top_landing_pages": {
+                "items": {
+                  "properties": {
+                    "channel": {
+                      "enum": [
+                        "Direct",
+                        "Search",
+                        "Referral",
+                        "Social",
+                        "Email",
+                        "Paid",
+                        "Other"
+                      ],
+                      "type": "string"
+                    },
+                    "page_title": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "path_canon": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "path_canon",
+                    "channel",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "top_referrers": {
+                "items": {
+                  "$ref": "#/components/schemas/TopReferrer"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "by_channel",
+              "top_referrers",
+              "top_landing_pages"
+            ],
+            "type": "object"
+          },
+          "audience": {
+            "properties": {
+              "browsers": {
+                "items": {
+                  "properties": {
+                    "browser_family": {
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "browser_family",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "cities": {
+                "description": "Mixed overview audience slice. When unavailable, inspect\n`availability.sections` for `overview_cities`.\n",
+                "items": {
+                  "properties": {
+                    "city": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "city",
+                    "country",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "countries": {
+                "items": {
+                  "properties": {
+                    "country": {
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "country",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "devices": {
+                "items": {
+                  "properties": {
+                    "device_type": {
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "device_type",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "os": {
+                "items": {
+                  "properties": {
+                    "os_family": {
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "os_family",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "regions": {
+                "description": "Mixed overview audience slice. When unavailable, inspect\n`availability.sections` for `overview_regions`.\n",
+                "items": {
+                  "properties": {
+                    "country": {
+                      "type": "string"
+                    },
+                    "region": {
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "region",
+                    "country",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "countries",
+              "regions",
+              "cities",
+              "devices",
+              "browsers",
+              "os"
+            ],
+            "type": "object"
+          },
+          "content": {
+            "properties": {
+              "movers": {
+                "properties": {
+                  "top_gainers": {
+                    "items": {
+                      "$ref": "#/components/schemas/UserApiMoverItem"
+                    },
+                    "type": "array"
+                  },
+                  "top_losers": {
+                    "items": {
+                      "$ref": "#/components/schemas/UserApiMoverItem"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "top_gainers",
+                  "top_losers"
+                ],
+                "type": "object"
+              },
+              "top_pages": {
+                "items": {
+                  "properties": {
+                    "page_title": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "pageviews": {
+                      "type": "number"
+                    },
+                    "path_canon": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path_canon",
+                    "pageviews"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "top_pages",
+              "movers"
+            ],
+            "type": "object"
+          },
+          "data_health": {
+            "properties": {
+              "last_event_at": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "last_event_at"
+            ],
+            "type": "object"
+          },
+          "overview": {
+            "properties": {
+              "timeseries": {
+                "items": {
+                  "properties": {
+                    "avg_page_eng_time_ms": {
+                      "type": "number"
+                    },
+                    "avg_session_eng_time_ms": {
+                      "type": "number"
+                    },
+                    "bounce_rate": {
+                      "type": "number"
+                    },
+                    "date": {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "engagement_rate": {
+                      "type": "number"
+                    },
+                    "pageviews": {
+                      "type": "number"
+                    },
+                    "sessions": {
+                      "type": "number"
+                    },
+                    "visitors": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "pageviews",
+                    "sessions",
+                    "visitors",
+                    "bounce_rate",
+                    "engagement_rate",
+                    "avg_session_eng_time_ms",
+                    "avg_page_eng_time_ms"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "totals": {
+                "properties": {
+                  "avg_page_eng_time_ms": {
+                    "type": "number"
+                  },
+                  "avg_pages_per_session": {
+                    "type": "number"
+                  },
+                  "avg_session_eng_time_ms": {
+                    "type": "number"
+                  },
+                  "bounce_rate": {
+                    "type": "number"
+                  },
+                  "engagement_rate": {
+                    "type": "number"
+                  },
+                  "pageviews": {
+                    "type": "number"
+                  },
+                  "sessions": {
+                    "type": "number"
+                  },
+                  "visitors": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "pageviews",
+                  "sessions",
+                  "visitors",
+                  "avg_pages_per_session",
+                  "bounce_rate",
+                  "engagement_rate",
+                  "avg_session_eng_time_ms",
+                  "avg_page_eng_time_ms"
+                ],
+                "type": "object"
+              },
+              "visitors_mode": {
+                "enum": [
+                  "sessions",
+                  "daily_uniques"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "totals",
+              "timeseries",
+              "visitors_mode"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "overview",
+          "content",
+          "acquisition",
+          "audience",
+          "data_health"
+        ],
+        "type": "object"
+      },
+      "OverviewReportResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserApiOverviewEnvelope"
+          },
+          {
+            "properties": {
+              "meta": {
+                "$ref": "#/components/schemas/MeteredMeta"
+              }
+            },
+            "required": [
+              "meta"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ProductApi": {
+        "properties": {
+          "allow_goals": {
+            "type": "boolean"
+          },
+          "allow_reports": {
+            "type": "boolean"
+          },
+          "allow_tenant_dimension": {
+            "type": "boolean"
+          },
+          "allow_tenants": {
+            "type": "boolean"
+          },
+          "availability": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "can_create_tokens": {
+            "type": "boolean"
+          },
+          "hard_cap_units": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "max_breakdown_limit": {
+            "type": "integer"
+          },
+          "max_range_days": {
+            "type": "integer"
+          },
+          "max_report_limit": {
+            "type": "integer"
+          },
+          "monthly_included_units": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "rate_limit_rps": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "retention_days": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "usage_history_months": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "availability",
+          "can_create_tokens",
+          "allow_reports",
+          "allow_goals",
+          "allow_tenants",
+          "allow_tenant_dimension",
+          "max_range_days",
+          "max_breakdown_limit",
+          "max_report_limit",
+          "usage_history_months"
+        ],
+        "type": "object"
+      },
+      "ProductDashboard": {
+        "properties": {
+          "breakdowns_high_cardinality_level": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "guardrailed",
+              "advanced",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "breakdowns_standard_level": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "guardrailed",
+              "advanced",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "essential_level": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "guardrailed",
+              "advanced",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "hourly_enabled": {
+            "type": "boolean"
+          },
+          "hourly_level": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "guardrailed",
+              "advanced",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "standard_level": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "guardrailed",
+              "advanced",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "team_management_level": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "guardrailed",
+              "advanced",
+              "custom"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "hourly_enabled",
+          "hourly_level",
+          "essential_level",
+          "standard_level",
+          "breakdowns_standard_level",
+          "breakdowns_high_cardinality_level",
+          "team_management_level"
+        ],
+        "type": "object"
+      },
+      "ProductExports": {
+        "properties": {
+          "csv": {
+            "type": "boolean"
+          },
+          "formats": {
+            "items": {
+              "enum": [
+                "csv"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "level": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "guardrailed",
+              "advanced",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "surfaces": {
+            "items": {
+              "enum": [
+                "content",
+                "acquisition",
+                "actions",
+                "technology",
+                "performance"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "csv",
+          "level",
+          "formats",
+          "surfaces"
+        ],
+        "type": "object"
+      },
+      "ProductQuotas": {
+        "properties": {
+          "events_included": {
+            "type": "integer"
+          },
+          "hard_site_limit": {
+            "type": "integer"
+          },
+          "hard_user_limit": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "sites_included": {
+            "type": "integer"
+          },
+          "users_included": {
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "events_included",
+          "sites_included",
+          "users_included",
+          "hard_site_limit",
+          "hard_user_limit"
+        ],
+        "type": "object"
+      },
+      "ProductRetention": {
+        "properties": {
+          "api_retention_days": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "workspace_retention": {
+            "$ref": "#/components/schemas/RetentionPolicy"
+          }
+        },
+        "required": [
+          "workspace_retention"
+        ],
+        "type": "object"
+      },
+      "Quotas": {
+        "properties": {
+          "hard_cap_units": {
+            "type": "integer"
+          },
+          "included_units": {
+            "type": "integer"
+          },
+          "overage_units": {
+            "type": "integer"
+          },
+          "reset_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "used_units": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "included_units",
+          "used_units",
+          "overage_units",
+          "hard_cap_units",
+          "reset_at"
+        ],
+        "type": "object"
+      },
+      "Range": {
+        "properties": {
+          "compare_end": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "compare_start": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "compare_start",
+          "compare_end"
+        ],
+        "type": "object"
+      },
+      "ReportAvailability": {
+        "description": "Availability contract for profile-aware reads.\n\nFor `mixed` routes, HTTP `200` means the strict-safe base slice was\nreturned successfully. `readModel` tells you which slices belong to\nthe strict-safe baseline and which belong to `Extended`.\nSection-level locks or partial compatibility for enriched sub-slices\nare reported in `sections`.\n",
+        "properties": {
+          "classification": {
+            "$ref": "#/components/schemas/ReportAvailabilityClassification"
+          },
+          "collectionProfileEffectiveAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "compare": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportPeriodAvailability"
+              }
+            ],
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/ReportPeriodAvailability",
+            "description": "Route-level availability for the current range. On `mixed` routes,\n`status=available` means the strict-safe base slice is readable;\ninspect `sections` for enriched sub-slices that remain locked or\npartial.\n"
+          },
+          "currentProfile": {
+            "enum": [
+              "strict",
+              "extended"
+            ],
+            "type": "string"
+          },
+          "readModel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportAvailabilityReadModel"
+              }
+            ],
+            "nullable": true
+          },
+          "route": {
+            "$ref": "#/components/schemas/ReportAvailabilityRouteId"
+          },
+          "sections": {
+            "description": "Section-level availability for mixed routes. Each entry describes\nan enriched sub-slice that may remain locked or partially\ncompatible while the enclosing route still returns HTTP `200`.\n",
+            "items": {
+              "$ref": "#/components/schemas/ReportSectionAvailability"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "route",
+          "classification",
+          "currentProfile",
+          "collectionProfileEffectiveAt",
+          "current",
+          "compare",
+          "sections"
+        ],
+        "type": "object"
+      },
+      "ReportAvailabilityClassification": {
+        "enum": [
+          "strict_safe",
+          "extended_only",
+          "mixed"
+        ],
+        "type": "string"
+      },
+      "ReportAvailabilityReadModel": {
+        "description": "Explicit read-model for mixed routes. `strictSafe` lists the baseline\nslices that remain available in `Strict`; `extended` lists the\nenriched slices unlocked by `Extended`.\n",
+        "properties": {
+          "extended": {
+            "items": {
+              "$ref": "#/components/schemas/ReportAvailabilityReadModelSliceId"
+            },
+            "type": "array"
+          },
+          "strictSafe": {
+            "items": {
+              "$ref": "#/components/schemas/ReportAvailabilityReadModelSliceId"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "strictSafe",
+          "extended"
+        ],
+        "type": "object"
+      },
+      "ReportAvailabilityReadModelSliceId": {
+        "description": "Opaque identifier for a data slice within an availability result.",
+        "type": "string"
+      },
+      "ReportAvailabilityReason": {
+        "enum": [
+          "strict_safe_route",
+          "extended_data_required",
+          "requested_period_has_no_extended_data",
+          "requested_period_crosses_profile_change",
+          "outside_source_coverage",
+          "section_not_collected_in_runtime"
+        ],
+        "nullable": true,
+        "type": "string"
+      },
+      "ReportAvailabilityRouteId": {
+        "description": "Opaque identifier for the route associated with this availability result.",
+        "type": "string"
+      },
+      "ReportAvailabilitySectionId": {
+        "description": "Opaque identifier for a section within an availability result.",
+        "type": "string"
+      },
+      "ReportAvailabilityStatus": {
+        "enum": [
+          "available",
+          "locked_by_profile",
+          "partially_available_after_effective_at",
+          "partially_available_outside_source_coverage",
+          "not_available_for_requested_period"
+        ],
+        "type": "string"
+      },
+      "ReportPeriodAvailability": {
+        "properties": {
+          "compatibleEnd": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "compatibleStart": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/ReportAvailabilityReason"
+          },
+          "requestedEnd": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "requestedStart": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReportAvailabilityStatus"
+          }
+        },
+        "required": [
+          "status",
+          "reason",
+          "requestedStart",
+          "requestedEnd",
+          "compatibleStart",
+          "compatibleEnd"
+        ],
+        "type": "object"
+      },
+      "ReportSectionAvailability": {
+        "description": "Section-level availability for mixed routes. A mixed route can return\nHTTP `200` while one or more enriched sections remain locked or only\npartially compatible for the requested period.\n",
+        "properties": {
+          "classification": {
+            "$ref": "#/components/schemas/ReportAvailabilityClassification"
+          },
+          "compare": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportPeriodAvailability"
+              }
+            ],
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/ReportPeriodAvailability"
+          },
+          "id": {
+            "$ref": "#/components/schemas/ReportAvailabilitySectionId"
+          }
+        },
+        "required": [
+          "id",
+          "classification",
+          "current",
+          "compare"
+        ],
+        "type": "object"
+      },
+      "RetentionPolicy": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "fixed",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "unit": {
+            "enum": [
+              "days",
+              "months"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      "SiteItem": {
+        "properties": {
+          "hostnames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "product_configuration": {
+            "$ref": "#/components/schemas/SiteProductConfiguration"
+          },
+          "siteId": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "siteId",
+          "name",
+          "hostnames",
+          "status",
+          "product_configuration"
+        ],
+        "type": "object"
+      },
+      "SiteProductConfiguration": {
+        "properties": {
+          "api": {
+            "$ref": "#/components/schemas/ProductApi"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/EffectiveProductCapabilities"
+          },
+          "collection_profile": {
+            "enum": [
+              "strict",
+              "extended"
+            ],
+            "type": "string"
+          },
+          "collection_profile_effective_at": {
+            "description": "Timestamp from which the current site profile applies to future collection. This is prospective only and does not backfill older events.\n",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "dashboard": {
+            "$ref": "#/components/schemas/SiteProductDashboard"
+          },
+          "exports": {
+            "$ref": "#/components/schemas/ProductExports"
+          },
+          "product_retention": {
+            "$ref": "#/components/schemas/ProductRetention"
+          },
+          "runtime_plan_id": {
+            "enum": [
+              "free",
+              "starter",
+              "pro"
+            ],
+            "type": "string"
+          },
+          "technical_retention": {
+            "$ref": "#/components/schemas/TechnicalRetention"
+          }
+        },
+        "required": [
+          "runtime_plan_id",
+          "collection_profile",
+          "collection_profile_effective_at",
+          "product_retention",
+          "technical_retention",
+          "api",
+          "exports",
+          "dashboard",
+          "capabilities"
+        ],
+        "type": "object"
+      },
+      "SiteProductDashboard": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProductDashboard"
+          },
+          {
+            "properties": {
+              "enabled_surfaces": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "enabled_surfaces"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "SitesResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SiteItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "SurfaceCompareWindow": {
+        "description": "Compare window metadata for report and metrics surfaces.",
+        "properties": {
+          "compareEnd": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "compareStart": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "mode": {
+            "enum": [
+              "prev_period"
+            ],
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "SurfaceDataFreshness": {
+        "description": "Freshness metadata for a report or metrics surface.",
+        "properties": {
+          "asOf": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "cached": {
+            "type": "boolean"
+          },
+          "lagMinutes": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "fresh",
+              "delayed",
+              "stale",
+              "unknown"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
+      "SurfaceExportCapability": {
+        "description": "Export availability for the returned surface and selected plan.",
+        "properties": {
+          "csv": {
+            "type": "boolean"
+          },
+          "dataEnvelope": {
+            "enum": [
+              "strict",
+              "extended",
+              "mixed"
+            ],
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "none",
+              "limited",
+              "standard",
+              "guardrailed",
+              "advanced",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "csv",
+          "level",
+          "dataEnvelope"
+        ],
+        "type": "object"
+      },
+      "SurfaceMeta": {
+        "description": "Additive launch-readiness metadata for reports and metrics.",
+        "properties": {
+          "compareWindow": {
+            "$ref": "#/components/schemas/SurfaceCompareWindow"
+          },
+          "dataEnvelope": {
+            "enum": [
+              "strict",
+              "extended",
+              "mixed"
+            ],
+            "type": "string"
+          },
+          "dataFreshness": {
+            "$ref": "#/components/schemas/SurfaceDataFreshness"
+          },
+          "exportCapability": {
+            "$ref": "#/components/schemas/SurfaceExportCapability"
+          },
+          "mode": {
+            "enum": [
+              "strict",
+              "extended"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "mode",
+          "dataEnvelope",
+          "dataFreshness",
+          "compareWindow",
+          "exportCapability"
+        ],
+        "type": "object"
+      },
+      "TechnicalRetention": {
+        "properties": {
+          "site_data_retention_months": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "site_data_retention_months"
+        ],
+        "type": "object"
+      },
+      "TenantItem": {
+        "properties": {
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ],
+            "type": "string"
+          },
+          "tenant_id": {
+            "description": "Stable tenant identifier.",
+            "type": "string"
+          },
+          "tenant_name": {
+            "description": "Current display name from the tenant registry.",
+            "type": "string"
+          },
+          "tenant_slug": {
+            "description": "Current routing slug from the tenant registry.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "tenant_slug",
+          "tenant_name",
+          "status"
+        ],
+        "type": "object"
+      },
+      "TenantsResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TenantItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "TimeseriesPoint": {
+        "properties": {
+          "ts": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "ts",
+          "value"
+        ],
+        "type": "object"
+      },
+      "TimeseriesResponse": {
+        "properties": {
+          "availability": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MeteredMeta"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/TimeseriesPoint"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "points",
+          "availability",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "TopReferrer": {
+        "properties": {
+          "channel": {
+            "enum": [
+              "Direct",
+              "Search",
+              "Referral",
+              "Social",
+              "Email",
+              "Paid",
+              "Other"
+            ],
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "favicon_url": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sessions": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "domain",
+          "sessions"
+        ],
+        "type": "object"
+      },
+      "TopSource": {
+        "properties": {
+          "sessions": {
+            "type": "number"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "sessions"
+        ],
+        "type": "object"
+      },
+      "UsageCurrentResponse": {
+        "properties": {
+          "hard_cap_units": {
+            "type": "integer"
+          },
+          "period": {
+            "type": "string"
+          },
+          "reset_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "units_included": {
+            "type": "integer"
+          },
+          "units_overage": {
+            "type": "integer"
+          },
+          "units_used": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "period",
+          "units_used",
+          "units_included",
+          "units_overage",
+          "hard_cap_units",
+          "reset_at"
+        ],
+        "type": "object"
+      },
+      "UsageHistoryItem": {
+        "properties": {
+          "hard_cap_units": {
+            "type": "integer"
+          },
+          "period": {
+            "type": "string"
+          },
+          "units_included": {
+            "type": "integer"
+          },
+          "units_overage": {
+            "type": "integer"
+          },
+          "units_used": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "period",
+          "units_used",
+          "units_included",
+          "units_overage",
+          "hard_cap_units"
+        ],
+        "type": "object"
+      },
+      "UsageHistoryResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/UsageHistoryItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "UsageMeta": {
+        "properties": {
+          "hard_cap_units": {
+            "type": "integer"
+          },
+          "included_units": {
+            "type": "integer"
+          },
+          "overage_units": {
+            "type": "integer"
+          },
+          "used_units": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "used_units",
+          "overage_units",
+          "included_units",
+          "hard_cap_units"
+        ],
+        "type": "object"
+      },
+      "UserApiAcquisitionCurrent": {
+        "properties": {
+          "by_channel": {
+            "items": {
+              "$ref": "#/components/schemas/AcquisitionChannelItem"
+            },
+            "type": "array"
+          },
+          "by_day": {
+            "items": {
+              "properties": {
+                "channel": {
+                  "enum": [
+                    "Direct",
+                    "Search",
+                    "Referral",
+                    "Social",
+                    "Email",
+                    "Paid",
+                    "Other"
+                  ],
+                  "type": "string"
+                },
+                "date": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "sessions": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "date",
+                "channel",
+                "sessions"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "top_campaigns": {
+            "description": "Mixed acquisition section `acquisition_attribution`. May be empty\nwhen the route returns only the strict-safe slice in HTTP `200`.\n",
+            "items": {
+              "properties": {
+                "campaign": {
+                  "type": "string"
+                },
+                "sessions": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "campaign",
+                "sessions"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "top_landing_pages": {
+            "description": "Strict-safe acquisition-lite slice available in both Strict and Extended.",
+            "items": {
+              "properties": {
+                "channel": {
+                  "enum": [
+                    "Direct",
+                    "Search",
+                    "Referral",
+                    "Social",
+                    "Email",
+                    "Paid",
+                    "Other"
+                  ],
+                  "type": "string"
+                },
+                "page_title": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "path_canon": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "sessions": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "path_canon",
+                "channel",
+                "sessions"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "top_mediums": {
+            "description": "Mixed acquisition section `acquisition_attribution`. May be empty\nwhen the route returns only the strict-safe slice in HTTP `200`.\n",
+            "items": {
+              "properties": {
+                "medium": {
+                  "type": "string"
+                },
+                "sessions": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "medium",
+                "sessions"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "top_referrers": {
+            "description": "Strict-safe host-only referral slice available in both Strict and Extended.",
+            "items": {
+              "$ref": "#/components/schemas/TopReferrer"
+            },
+            "type": "array"
+          },
+          "top_sources": {
+            "description": "Mixed acquisition section `acquisition_attribution`. May be empty\nwhen the route returns only the strict-safe slice in HTTP `200`.\n",
+            "items": {
+              "$ref": "#/components/schemas/TopSource"
+            },
+            "type": "array"
+          },
+          "totals": {
+            "properties": {
+              "avg_session_eng_time_ms": {
+                "type": "number"
+              },
+              "engagement_rate": {
+                "type": "number"
+              },
+              "pageviews": {
+                "type": "number"
+              },
+              "sessions": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "sessions",
+              "pageviews",
+              "engagement_rate",
+              "avg_session_eng_time_ms"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "totals",
+          "by_day",
+          "by_channel",
+          "top_referrers",
+          "top_sources",
+          "top_mediums",
+          "top_campaigns",
+          "top_landing_pages"
+        ],
+        "type": "object"
+      },
+      "UserApiAcquisitionEnvelope": {
+        "properties": {
+          "availability": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "compare": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserApiAcquisitionCurrent"
+              }
+            ],
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/UserApiAcquisitionCurrent"
+          },
+          "range": {
+            "$ref": "#/components/schemas/Range"
+          }
+        },
+        "required": [
+          "current",
+          "compare",
+          "range",
+          "availability"
+        ],
+        "type": "object"
+      },
+      "UserApiActionsEnvelope": {
+        "properties": {
+          "availability": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "compare": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActionsCurrent"
+              }
+            ],
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/ActionsCurrent"
+          },
+          "range": {
+            "$ref": "#/components/schemas/Range"
+          }
+        },
+        "required": [
+          "current",
+          "compare",
+          "range",
+          "availability"
+        ],
+        "type": "object"
+      },
+      "UserApiContentFullEnvelope": {
+        "properties": {
+          "availability": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "compare": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContentFullCurrent"
+              }
+            ],
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/ContentFullCurrent"
+          },
+          "range": {
+            "$ref": "#/components/schemas/Range"
+          }
+        },
+        "required": [
+          "current",
+          "compare",
+          "range",
+          "availability"
+        ],
+        "type": "object"
+      },
+      "UserApiContentSummaryEnvelope": {
+        "properties": {
+          "availability": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "compare": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContentSummaryCurrent"
+              }
+            ],
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/ContentSummaryCurrent"
+          },
+          "range": {
+            "$ref": "#/components/schemas/Range"
+          }
+        },
+        "required": [
+          "current",
+          "compare",
+          "range",
+          "availability"
+        ],
+        "type": "object"
+      },
+      "UserApiGoalFilters": {
+        "additionalProperties": false,
+        "properties": {
+          "action_id": {
+            "type": "string"
+          },
+          "action_target_host": {
+            "type": "string"
+          },
+          "form_action_path": {
+            "type": "string"
+          },
+          "form_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserApiMoverItem": {
+        "properties": {
+          "current_pageviews": {
+            "type": "number"
+          },
+          "delta": {
+            "type": "number"
+          },
+          "delta_pct": {
+            "type": "number"
+          },
+          "page_title": {
+            "nullable": true,
+            "type": "string"
+          },
+          "path_canon": {
+            "nullable": true,
+            "type": "string"
+          },
+          "previous_pageviews": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "path_canon",
+          "current_pageviews",
+          "previous_pageviews",
+          "delta",
+          "delta_pct"
+        ],
+        "type": "object"
+      },
+      "UserApiOverviewEnvelope": {
+        "properties": {
+          "availability": {
+            "$ref": "#/components/schemas/ReportAvailability"
+          },
+          "compare": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OverviewCurrent"
+              }
+            ],
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/OverviewCurrent"
+          },
+          "range": {
+            "$ref": "#/components/schemas/Range"
+          }
+        },
+        "required": [
+          "current",
+          "compare",
+          "range",
+          "availability"
+        ],
+        "type": "object"
+      },
+      "WorkspaceProductConfiguration": {
+        "properties": {
+          "api": {
+            "$ref": "#/components/schemas/ProductApi"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/EffectiveProductCapabilities"
+          },
+          "dashboard": {
+            "$ref": "#/components/schemas/ProductDashboard"
+          },
+          "default_collection_profile": {
+            "enum": [
+              "strict",
+              "extended"
+            ],
+            "type": "string"
+          },
+          "exports": {
+            "$ref": "#/components/schemas/ProductExports"
+          },
+          "product_retention": {
+            "$ref": "#/components/schemas/ProductRetention"
+          },
+          "quotas": {
+            "$ref": "#/components/schemas/ProductQuotas"
+          },
+          "runtime_plan_id": {
+            "enum": [
+              "free",
+              "starter",
+              "pro"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "runtime_plan_id",
+          "default_collection_profile",
+          "quotas",
+          "product_retention",
+          "api",
+          "exports",
+          "dashboard",
+          "capabilities"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "API Key",
+        "description": "Bearer token created from Dashboard Settings > API Access.\nScopes:\n- `metrics:read` -- access to `/v1/me`, `/v1/sites`, `/v1/tenants`,\n  `/v1/metrics/*`, `/v1/reports/*`, `GET /v1/goals`,\n  `GET /v1/goals/conversions`, and implicitly grants access to\n  `/v1/usage/*`.\n- `usage:read` -- access to `/v1/usage/*` only.\n",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "API-first analytics data plane for customer integrations.\n- Strict org isolation based on API token\n- Self-serve API plan gating (retention, intervals, quotas)\n- Metered usage for analytics reads\n- Exact CTA and conversion reporting through the `actions` and `goals` domains\nOperation extensions describe the existing access and charging policy:\n`x-pomelo-scopes-any-of` accepts any one listed scope, not all of them;\n`x-pomelo-metered` marks analytics reads that may consume usage units.\nThe `metrics:read` scope also grants access to usage reads.\n",
+    "title": "Pomelo User API",
+    "version": "1.3.1"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/v1/goals": {
+      "get": {
+        "description": "Read-only goal listing. Goals are created and managed from the Pomelo dashboard,\nthen exposed here for API consumers. This endpoint is not metered.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SiteId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalListResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "summary": "List goals configured for a site",
+        "tags": [
+          "Goals"
+        ],
+        "x-pomelo-metered": false,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/goals/conversions": {
+      "get": {
+        "description": "Read-only conversions for goals already configured in the Pomelo dashboard.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SiteId"
+          },
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/FromDate"
+          },
+          {
+            "$ref": "#/components/parameters/ToDate"
+          },
+          {
+            "$ref": "#/components/parameters/CompareParam"
+          },
+          {
+            "$ref": "#/components/parameters/TrafficParam"
+          },
+          {
+            "$ref": "#/components/parameters/ReportLimit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalsConversionsResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/XRateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/HardCapReached"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/ReportAvailabilityConflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/AnalyticsUnavailable"
+          }
+        },
+        "summary": "Goal conversions over time range",
+        "tags": [
+          "Goals"
+        ],
+        "x-pomelo-metered": true,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/XRateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "summary": "Current API principal and plan limits",
+        "tags": [
+          "Identity"
+        ],
+        "x-pomelo-metered": false,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/metrics/breakdown": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SiteId"
+          },
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/Metric"
+          },
+          {
+            "$ref": "#/components/parameters/BreakdownDimension"
+          },
+          {
+            "$ref": "#/components/parameters/BreakdownLimit"
+          },
+          {
+            "$ref": "#/components/parameters/FromDate"
+          },
+          {
+            "$ref": "#/components/parameters/ToDate"
+          },
+          {
+            "$ref": "#/components/parameters/Filters"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BreakdownResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/XRateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/HardCapReached"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/ReportAvailabilityConflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/AnalyticsUnavailable"
+          }
+        },
+        "summary": "Query metrics grouped by dimension",
+        "tags": [
+          "Metrics"
+        ],
+        "x-pomelo-metered": true,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/metrics/timeseries": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SiteId"
+          },
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/Metric"
+          },
+          {
+            "$ref": "#/components/parameters/FromDate"
+          },
+          {
+            "$ref": "#/components/parameters/ToDate"
+          },
+          {
+            "$ref": "#/components/parameters/Interval"
+          },
+          {
+            "$ref": "#/components/parameters/Filters"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimeseriesResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/XRateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/HardCapReached"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/ReportAvailabilityConflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/AnalyticsUnavailable"
+          }
+        },
+        "summary": "Query metrics as timeseries points",
+        "tags": [
+          "Metrics"
+        ],
+        "x-pomelo-metered": true,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/reports/acquisition": {
+      "get": {
+        "description": "Mixed route family. The strict-safe slice exposes channels, host-only\nreferrers, and landing pages. Attribution slices such as sources,\nmediums, and campaigns remain profile-gated. Read\n`availability.readModel` for the route split, then inspect\n`availability.sections` as `acquisition_attribution`.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SiteId"
+          },
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/FromDate"
+          },
+          {
+            "$ref": "#/components/parameters/ToDate"
+          },
+          {
+            "$ref": "#/components/parameters/CompareParam"
+          },
+          {
+            "$ref": "#/components/parameters/TrafficParam"
+          },
+          {
+            "$ref": "#/components/parameters/ReportLimit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcquisitionReportResponse"
+                }
+              }
+            },
+            "description": "OK. Mixed route: the strict-safe acquisition slice succeeded.\n`availability.readModel` shows what belongs to the strict-safe\nbaseline, while `availability.sections` reports whether\n`acquisition_attribution` remains locked or only partially\ncompatible for the requested period.\n",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/XRateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/HardCapReached"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/AnalyticsUnavailable"
+          }
+        },
+        "summary": "Acquisition channels, referrers, and landing pages",
+        "tags": [
+          "Reports"
+        ],
+        "x-pomelo-metered": true,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/reports/actions": {
+      "get": {
+        "description": "Mixed route family. The strict-safe slice covers bounded simple actions\n(`ui.click`, `outbound.click`, `file.download`, `form.submit`). Richer\nfamilies such as goals, errors, and custom events remain profile-gated\nand are marked through `availability.sections` as `actions_advanced`.\nUse `availability.readModel` to distinguish the stable baseline from\nthe enriched families unlocked by `Extended`.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SiteId"
+          },
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/FromDate"
+          },
+          {
+            "$ref": "#/components/parameters/ToDate"
+          },
+          {
+            "$ref": "#/components/parameters/CompareParam"
+          },
+          {
+            "$ref": "#/components/parameters/TrafficParam"
+          },
+          {
+            "$ref": "#/components/parameters/ReportLimit"
+          },
+          {
+            "$ref": "#/components/parameters/ActionFamily"
+          },
+          {
+            "$ref": "#/components/parameters/ActionKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionsReportResponse"
+                }
+              }
+            },
+            "description": "OK. Mixed route: the strict-safe bounded action slice succeeded.\n`availability.readModel` shows what belongs to the strict-safe\nbaseline, while `availability.sections` reports whether\n`actions_advanced` remains locked or only partially compatible\nfor the requested period.\n",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/XRateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/HardCapReached"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/AnalyticsUnavailable"
+          }
+        },
+        "summary": "Simple action report with advanced families gated by profile",
+        "tags": [
+          "Reports"
+        ],
+        "x-pomelo-metered": true,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/reports/content": {
+      "get": {
+        "description": "`summary` supports 1-365 inclusive UTC days. `full` and its deprecated\n`details` alias support 1-90 days. Comparison supports at most 30 days\nin either mode. Responses are never truncated: if the serialized proxy\nresponse would exceed 5 MiB, the request returns HTTP 422 with\n`REPORT_RESPONSE_TOO_LARGE` and consumes zero metered units. Detailed\nexports beyond 90 days are not provided synchronously by this endpoint.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SiteId"
+          },
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/FromDate"
+          },
+          {
+            "$ref": "#/components/parameters/ToDate"
+          },
+          {
+            "$ref": "#/components/parameters/CompareParam"
+          },
+          {
+            "$ref": "#/components/parameters/TrafficParam"
+          },
+          {
+            "$ref": "#/components/parameters/ContentInclude"
+          },
+          {
+            "$ref": "#/components/parameters/ReportLimit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentReportResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/XRateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/HardCapReached"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/AnalyticsUnavailable"
+          }
+        },
+        "summary": "Content report",
+        "tags": [
+          "Reports"
+        ],
+        "x-pomelo-metered": true,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/reports/overview": {
+      "get": {
+        "description": "Mixed route family. In `Strict`, the response still includes the\nstrict-safe overview baseline plus an acquisition-lite preview built\nfrom channels, host-only referrers, and landing pages. Read\n`availability.readModel` for the baseline split, then inspect\n`availability.sections` for enriched slices that remain locked.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SiteId"
+          },
+          {
+            "$ref": "#/components/parameters/TenantId"
+          },
+          {
+            "$ref": "#/components/parameters/FromDate"
+          },
+          {
+            "$ref": "#/components/parameters/ToDate"
+          },
+          {
+            "$ref": "#/components/parameters/CompareParam"
+          },
+          {
+            "$ref": "#/components/parameters/TrafficParam"
+          },
+          {
+            "$ref": "#/components/parameters/ReportLimit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewReportResponse"
+                }
+              }
+            },
+            "description": "OK. Mixed route: the strict-safe overview slice succeeded. Inspect\n`availability.sections` for enriched or geo-detail sections that\nremain locked or only partially compatible.\n",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/XRateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/HardCapReached"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/AnalyticsUnavailable"
+          }
+        },
+        "summary": "Consolidated site overview",
+        "tags": [
+          "Reports"
+        ],
+        "x-pomelo-metered": true,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/sites": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SitesResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "summary": "List accessible sites for this token",
+        "tags": [
+          "Sites"
+        ],
+        "x-pomelo-metered": false,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/tenants": {
+      "get": {
+        "description": "Returns all active tenants accessible for the requested `site_id`.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/SiteId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantsResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "summary": "List accessible tenants for a site",
+        "tags": [
+          "Sites"
+        ],
+        "x-pomelo-metered": false,
+        "x-pomelo-scopes-any-of": [
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/usage/current": {
+      "get": {
+        "description": "Requires `usage:read` scope. Tokens with `metrics:read` also\nhave implicit access to this endpoint.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageCurrentResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "summary": "Current billing period usage",
+        "tags": [
+          "Usage"
+        ],
+        "x-pomelo-metered": false,
+        "x-pomelo-scopes-any-of": [
+          "usage:read",
+          "metrics:read"
+        ]
+      }
+    },
+    "/v1/usage/history": {
+      "get": {
+        "description": "Requires `usage:read` scope. Tokens with `metrics:read` also\nhave implicit access to this endpoint.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FromDate"
+          },
+          {
+            "$ref": "#/components/parameters/ToDate"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageHistoryResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "summary": "Usage history by month",
+        "tags": [
+          "Usage"
+        ],
+        "x-pomelo-metered": false,
+        "x-pomelo-scopes-any-of": [
+          "usage:read",
+          "metrics:read"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.pomeloanalytics.com"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Identity"
+    },
+    {
+      "name": "Sites"
+    },
+    {
+      "name": "Metrics"
+    },
+    {
+      "name": "Reports"
+    },
+    {
+      "name": "Goals"
+    },
+    {
+      "name": "Usage"
+    }
+  ]
+}

@@ -1,0 +1,230 @@
+{
+  "artifact": {
+    "path": "openapi.json",
+    "sha256": "831d08342aead4e393265b71ba13668e06303b0a81417e3809a75e17502bc006"
+  },
+  "components": {
+    "headers": [
+      "XRateLimitLimit",
+      "XRateLimitRemaining",
+      "XRateLimitReset",
+      "XRequestId"
+    ],
+    "parameters": [
+      "ActionFamily",
+      "ActionKey",
+      "BreakdownDimension",
+      "BreakdownLimit",
+      "CompareParam",
+      "ContentInclude",
+      "Filters",
+      "FromDate",
+      "Interval",
+      "Metric",
+      "ReportLimit",
+      "RequestIdHeader",
+      "SiteId",
+      "TenantId",
+      "ToDate",
+      "TrafficParam"
+    ],
+    "responses": [
+      "AnalyticsUnavailable",
+      "Forbidden",
+      "HardCapReached",
+      "InvalidParams",
+      "RateLimited",
+      "ReportAvailabilityConflict",
+      "Unauthorized"
+    ],
+    "schemas": [
+      "AcquisitionChannelItem",
+      "AcquisitionReportResponse",
+      "ActionsCurrent",
+      "ActionsReportResponse",
+      "AnalyticsUnavailableErrorBody",
+      "AnalyticsUnavailableErrorResponse",
+      "BreakdownResponse",
+      "BreakdownRow",
+      "ContentFullCurrent",
+      "ContentFullReportResponse",
+      "ContentReportResponse",
+      "ContentSummaryCurrent",
+      "ContentSummaryReportResponse",
+      "ContentTotals",
+      "DerivedProductCapability",
+      "EffectiveProductCapabilities",
+      "ErrorBody",
+      "ErrorResponse",
+      "Goal",
+      "GoalListResponse",
+      "GoalsConversionsCurrent",
+      "GoalsConversionsEnvelope",
+      "GoalsConversionsResponse",
+      "MeResponse",
+      "MeteredMeta",
+      "OverviewCurrent",
+      "OverviewReportResponse",
+      "ProductApi",
+      "ProductDashboard",
+      "ProductExports",
+      "ProductQuotas",
+      "ProductRetention",
+      "Quotas",
+      "Range",
+      "ReportAvailability",
+      "ReportAvailabilityClassification",
+      "ReportAvailabilityReadModel",
+      "ReportAvailabilityReadModelSliceId",
+      "ReportAvailabilityReason",
+      "ReportAvailabilityRouteId",
+      "ReportAvailabilitySectionId",
+      "ReportAvailabilityStatus",
+      "ReportPeriodAvailability",
+      "ReportSectionAvailability",
+      "RetentionPolicy",
+      "SiteItem",
+      "SiteProductConfiguration",
+      "SiteProductDashboard",
+      "SitesResponse",
+      "SurfaceCompareWindow",
+      "SurfaceDataFreshness",
+      "SurfaceExportCapability",
+      "SurfaceMeta",
+      "TechnicalRetention",
+      "TenantItem",
+      "TenantsResponse",
+      "TimeseriesPoint",
+      "TimeseriesResponse",
+      "TopReferrer",
+      "TopSource",
+      "UsageCurrentResponse",
+      "UsageHistoryItem",
+      "UsageHistoryResponse",
+      "UsageMeta",
+      "UserApiAcquisitionCurrent",
+      "UserApiAcquisitionEnvelope",
+      "UserApiActionsEnvelope",
+      "UserApiContentFullEnvelope",
+      "UserApiContentSummaryEnvelope",
+      "UserApiGoalFilters",
+      "UserApiMoverItem",
+      "UserApiOverviewEnvelope",
+      "WorkspaceProductConfiguration"
+    ],
+    "securitySchemes": [
+      "bearerAuth"
+    ]
+  },
+  "omitted": {
+    "components": 2,
+    "examples": 5,
+    "operations": 0,
+    "otherAnnotations": 0,
+    "paths": 0,
+    "unreviewedProse": 0
+  },
+  "operations": [
+    {
+      "method": "get",
+      "path": "/v1/me"
+    },
+    {
+      "method": "get",
+      "path": "/v1/sites"
+    },
+    {
+      "method": "get",
+      "path": "/v1/tenants"
+    },
+    {
+      "method": "get",
+      "path": "/v1/metrics/timeseries"
+    },
+    {
+      "method": "get",
+      "path": "/v1/metrics/breakdown"
+    },
+    {
+      "method": "get",
+      "path": "/v1/reports/overview"
+    },
+    {
+      "method": "get",
+      "path": "/v1/reports/content"
+    },
+    {
+      "method": "get",
+      "path": "/v1/reports/acquisition"
+    },
+    {
+      "method": "get",
+      "path": "/v1/reports/actions"
+    },
+    {
+      "method": "get",
+      "path": "/v1/goals"
+    },
+    {
+      "method": "get",
+      "path": "/v1/goals/conversions"
+    },
+    {
+      "method": "get",
+      "path": "/v1/usage/current"
+    },
+    {
+      "method": "get",
+      "path": "/v1/usage/history"
+    }
+  ],
+  "policy": {
+    "path": "openapi/public-export-policy.json",
+    "sha256": "234c3e5fb8d5a2f165640c8771ba821ed163a190339b48bddc7f3be40281faa5",
+    "version": 1
+  },
+  "projections": [
+    {
+      "compatibility": "documentation-only",
+      "kind": "reviewed-prose-replacement",
+      "outputSha256": "3b485bf4d41583812386e6736e127dd6852e0659f493806f9a4cbf09e2293eec",
+      "pointer": "/components/parameters/FromDate/description",
+      "sourceSha256": "0d74ed7bd7db37c10b66d0db39c2ff07eb27079bead3e6914cf9d6089604ed70"
+    },
+    {
+      "compatibility": "type-widening",
+      "kind": "opaque-identifier",
+      "outputSha256": "df38c2303061d6687eb9c1b746f70a3b123d1a09b461e2dcdaf32e0dcce33098",
+      "pointer": "/components/schemas/ReportAvailabilityReadModelSliceId",
+      "sourceSha256": "0f5482d80019f7c13101fea011715630ccff4a0c1863a9690ff5f092df326ed5"
+    },
+    {
+      "compatibility": "type-widening",
+      "kind": "opaque-identifier",
+      "outputSha256": "b400369bac3acc7da4132f6d565287db8ce4319eecc89b8b9cb3548b6da7f462",
+      "pointer": "/components/schemas/ReportAvailabilityRouteId",
+      "sourceSha256": "1ef2d35e25cf5158bac0cef83b2c1af01ad9a9e8154297d642e279e44e3ff3d0"
+    },
+    {
+      "compatibility": "type-widening",
+      "kind": "opaque-identifier",
+      "outputSha256": "250fb96d96eced45c6c8c4896ae6ffb5b2d8c9e54f6c9a8aba5d2aeebb5dbcb2",
+      "pointer": "/components/schemas/ReportAvailabilitySectionId",
+      "sourceSha256": "487411ddc3e0ab518334239f3e0baa97b2c9096f655e18ef116aeb3d31b22e12"
+    },
+    {
+      "compatibility": "documentation-only",
+      "kind": "ascii-hyphen",
+      "outputSha256": "05551de35e0ca65794a5298ba5bd0292a380289ba6b3c11314f07f02683c921c",
+      "pointer": "/paths/~1v1~1reports~1content/get/description",
+      "sourceSha256": "e0f86fabdd7cdfb4bed68e83cdaa5a1024dcbb19c959786b5b6bdaa8b53171fb"
+    }
+  ],
+  "proof": "Source-only projection; no deployed artifact or authenticated runtime verification.",
+  "source": {
+    "commit": "af592b1ee1af5d895094d1253cf1c0e1ee4f00f4",
+    "path": "openapi/v1.yaml",
+    "sha256": "4582f733f85e04b113df6df7aad0549286e354f32ab4002e94e4f05233387838"
+  },
+  "version": 1
+}
