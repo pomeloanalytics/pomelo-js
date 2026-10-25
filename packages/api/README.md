@@ -72,6 +72,38 @@ The server owns defaults, period validation, entitlements, and numeric limits;
 the SDK does not choose content depth, clamp limits, or change a requested range.
 The `details` alias for content `include` remains accepted by the public contract.
 
+Acquisition has three distinct response shapes. The SDK forwards `include`
+unchanged and returns the complete response without renaming one shape into another.
+
+| Acquisition mode | Fields in `data.current` |
+| --- | --- |
+| `summary` | `channels`, `coverage`, `mix_timeseries`, `totals`, `goals_configured` |
+| `full` | `by_channel`, `by_day`, `totals`, and top lists |
+| `details` | `dimensions`, `landing_pages`, `goals_configured`, and optional `impact` |
+
+Narrow the actual response by its fields. The request option does not make every
+conditional field present. Goal impact can be absent or null; the SDK adds no
+enrichment or default value.
+
+```ts
+const { data } = await pomelo.reports.acquisition({
+  siteId: 'site-test', from: '2026-10-01', to: '2026-10-24', include: 'summary',
+});
+if ('channels' in data.current) {
+  const summaryChannels = data.current.channels;
+} else if ('by_channel' in data.current) {
+  const fullChannels = data.current.by_channel;
+} else {
+  const dimensions = data.current.dimensions;
+  const conditionalImpact = data.current.impact;
+}
+```
+
+For Acquisition, `details` is a distinct shape. For Content, `details` is the
+deprecated alias for `full`. Actions accepts `summary`, `full`, and `details`
+using its single response schema; summary leaves detail lists empty on the server.
+Omitting `include` leaves the server's selection unchanged.
+
 HTTP 200 on a mixed route means its strict-safe baseline succeeded. Check
 `availability.sections` for sections that remain locked or only partially
 available. Tenant-scoped reads use a stable opaque `tenantId`; the server checks

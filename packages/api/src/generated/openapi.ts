@@ -338,6 +338,10 @@ export interface paths {
          *     mediums, and campaigns remain profile-gated. Read
          *     `availability.readModel` for the route split, then inspect
          *     `availability.sections` as `acquisition_attribution`.
+         *     `include=summary` returns `current.channels`, coverage and mix timeseries.
+         *     `full` returns `current.by_channel` and top lists. `details` returns
+         *     dimensions, landing pages and optional goal impact; it is a distinct
+         *     Acquisition variant, not the Content alias for full.
          */
         get: {
             parameters: {
@@ -346,6 +350,8 @@ export interface paths {
                     compare?: components["parameters"]["CompareParam"];
                     /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
+                    /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. The deployed configuration must be qualified separately. */
+                    include?: components["parameters"]["ReportInclude"];
                     /** @description Number of rows returned by top lists for report endpoints. */
                     limit?: components["parameters"]["ReportLimit"];
                     site_id: components["parameters"]["SiteId"];
@@ -419,6 +425,9 @@ export interface paths {
          *     and are marked through `availability.sections` as `actions_advanced`.
          *     Use `availability.readModel` to distinguish the stable baseline from
          *     the enriched families unlocked by `Extended`.
+         *     `include=summary` keeps aggregate families and timeseries and leaves
+         *     action/context detail lists empty. `full` and `details` request those
+         *     detail rows using the same Actions response schema.
          */
         get: {
             parameters: {
@@ -431,6 +440,8 @@ export interface paths {
                     compare?: components["parameters"]["CompareParam"];
                     /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
+                    /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. The deployed configuration must be qualified separately. */
+                    include?: components["parameters"]["ReportInclude"];
                     /** @description Number of rows returned by top lists for report endpoints. */
                     limit?: components["parameters"]["ReportLimit"];
                     site_id: components["parameters"]["SiteId"];
@@ -850,8 +861,60 @@ export interface components {
             channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
             sessions: number;
         };
-        AcquisitionReportResponse: components["schemas"]["UserApiAcquisitionEnvelope"] & {
+        AcquisitionCoverage: {
+            direct_sessions: number;
+            direct_share: number;
+            non_direct_sessions: number;
+            non_direct_share: number;
+            tagged_sessions: number;
+            tagged_share: number;
+        };
+        AcquisitionDetailsReportResponse: components["schemas"]["UserApiAcquisitionReportMeta"] & {
+            compare: components["schemas"]["UserApiAcquisitionDetailsCurrent"] | null;
+            current: components["schemas"]["UserApiAcquisitionDetailsCurrent"];
+        };
+        AcquisitionDimensionItem: components["schemas"]["AcquisitionSummaryTotals"] & {
+            favicon_url?: string | null;
+            share: number;
+            value: string;
+        };
+        AcquisitionFullReportResponse: components["schemas"]["UserApiAcquisitionEnvelope"] & {
             meta: components["schemas"]["MeteredMeta"];
+        };
+        AcquisitionImpact: {
+            channels: {
+                /** @enum {string} */
+                channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
+                converted_sessions: number;
+                session_conversion_rate: number;
+            }[];
+            landing_pages: {
+                converted_sessions: number;
+                path_canon: string | null;
+                session_conversion_rate: number;
+            }[];
+        };
+        AcquisitionLandingPageSummaryItem: components["schemas"]["AcquisitionSummaryTotals"] & {
+            page_title?: string | null;
+            path_canon: string | null;
+            /** @enum {string} */
+            primary_channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
+            share: number;
+        };
+        /** @description Source response variants selected by the effective Acquisition include mode. Current and comparison use the same shape; availability and metering remain present in every variant. */
+        AcquisitionReportResponse: components["schemas"]["AcquisitionFullReportResponse"] | components["schemas"]["AcquisitionSummaryReportResponse"] | components["schemas"]["AcquisitionDetailsReportResponse"];
+        AcquisitionSummaryChannelItem: components["schemas"]["AcquisitionChannelItem"] & components["schemas"]["AcquisitionSummaryTotals"] & {
+            share: number;
+        };
+        AcquisitionSummaryReportResponse: components["schemas"]["UserApiAcquisitionReportMeta"] & {
+            compare: components["schemas"]["UserApiAcquisitionSummaryCurrent"] | null;
+            current: components["schemas"]["UserApiAcquisitionSummaryCurrent"];
+        };
+        AcquisitionSummaryTotals: {
+            avg_pages_per_session: number;
+            avg_session_eng_time_ms: number;
+            engagement_rate: number;
+            sessions: number;
         };
         ActionsCurrent: {
             /**
@@ -1574,11 +1637,40 @@ export interface components {
                 sessions: number;
             };
         };
+        UserApiAcquisitionDetailsCurrent: {
+            dimensions: {
+                campaigns: components["schemas"]["AcquisitionDimensionItem"][];
+                mediums: components["schemas"]["AcquisitionDimensionItem"][];
+                referrers: components["schemas"]["AcquisitionDimensionItem"][];
+                sources: components["schemas"]["AcquisitionDimensionItem"][];
+            };
+            goals_configured: boolean;
+            impact?: components["schemas"]["AcquisitionImpact"] | null;
+            landing_pages: components["schemas"]["AcquisitionLandingPageSummaryItem"][];
+        };
         UserApiAcquisitionEnvelope: {
             availability: components["schemas"]["ReportAvailability"];
             compare: components["schemas"]["UserApiAcquisitionCurrent"] | null;
             current: components["schemas"]["UserApiAcquisitionCurrent"];
             range: components["schemas"]["Range"];
+        };
+        UserApiAcquisitionReportMeta: {
+            availability: components["schemas"]["ReportAvailability"];
+            meta: components["schemas"]["MeteredMeta"];
+            range: components["schemas"]["Range"];
+        };
+        UserApiAcquisitionSummaryCurrent: {
+            channels: components["schemas"]["AcquisitionSummaryChannelItem"][];
+            coverage: components["schemas"]["AcquisitionCoverage"];
+            goals_configured: boolean;
+            mix_timeseries: {
+                /** @enum {string} */
+                channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
+                /** Format: date */
+                date: string;
+                sessions: number;
+            }[];
+            totals: components["schemas"]["AcquisitionSummaryTotals"];
         };
         UserApiActionsEnvelope: {
             availability: components["schemas"]["ReportAvailability"];
@@ -1755,6 +1847,8 @@ export interface components {
          *     inactivity.
          */
         Metric: "pageviews" | "sessions" | "events";
+        /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. The deployed configuration must be qualified separately. */
+        ReportInclude: "summary" | "full" | "details";
         /** @description Number of rows returned by top lists for report endpoints. */
         ReportLimit: number;
         /** @description Optional idempotency/request correlation identifier. */
