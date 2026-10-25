@@ -193,7 +193,7 @@
   ],
   "policy": {
     "path": "openapi/public-export-policy.json",
-    "sha256": "01e14159b16bb9b75a792d06086508035a37d8350b0f88447c833291976ccd1e",
+    "sha256": "b78eb3d3a01a2761e74cdf23bf865b14362ae10004d519287ee0e891c5f1fecb",
     "version": 1
   },
   "projections": [
@@ -216,7 +216,7 @@
       "kind": "opaque-identifier",
       "outputSha256": "b400369bac3acc7da4132f6d565287db8ce4319eecc89b8b9cb3548b6da7f462",
       "pointer": "/components/schemas/ReportAvailabilityRouteId",
-      "sourceSha256": "1ef2d35e25cf5158bac0cef83b2c1af01ad9a9e8154297d642e279e44e3ff3d0"
+      "sourceSha256": "fcd52ea0ea0f15f7f74e1dc977b157b793e6439e967969664ae2fbf26543f47d"
     },
     {
       "compatibility": "type-widening",
@@ -235,9 +235,9 @@
   ],
   "proof": "Source-only projection; no deployed artifact or authenticated runtime verification.",
   "source": {
-    "commit": "cff7463478aca26e165c94943c2821c348195a12",
+    "commit": "9a154693d7fa7f52480861409112cec3bf7d705e",
     "path": "openapi/v1.yaml",
-    "sha256": "a28dd9d205c5320629ab168d95c4e60f91a458cc3a8744fc74642c54af924192"
+    "sha256": "438e4afbe6d2f950004d9c1eb2fac485ef54e4941fecf13dfeb018ab0e746a01"
   },
   "version": 1
 }
