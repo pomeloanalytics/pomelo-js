@@ -75,11 +75,64 @@ for (const include of ['full', 'summary', 'details'] as const) {
 }
 
 test('Acquisition details keeps conditional goal impact absent, null or populated without defaults', async () => {
-  for (const conditional of [{ goals_configured: false }, { goals_configured: true, impact: null }, { goals_configured: true, impact: { channels: [], landing_pages: [] } }]) {
+  for (const conditional of [{ goals_configured: false }, { goals_configured: true, impact: null }, { goals_configured: true, impact: { channels: [], landing_pages: [], sources: [], mediums: [], campaigns: [] } }]) {
     const payload = { ...variants.details, current: { ...variants.details.current, ...conditional } } satisfies components['schemas']['AcquisitionDetailsReportResponse'];
     const client = createPomeloClient({ token: 'synthetic-test-token', fetch: async () => Response.json(payload) });
     const { data } = await client.reports.acquisition({ siteId: 'site-test', include: 'details' });
     assert.deepEqual(data, payload);
     assert.equal(Object.hasOwn(data.current, 'impact'), Object.hasOwn(conditional, 'impact'));
   }
+});
+
+test('Acquisition goalId is encoded as goal_id in one GET and dimension impact is preserved', async () => {
+  const payload = {
+    ...variants.details,
+    availability: { ...common.availability, currentProfile: 'extended', sections: [] },
+    current: {
+      ...variants.details.current,
+      goals_configured: true,
+      impact: {
+        channels: [{ channel: 'Referral', converted_sessions: 2, session_conversion_rate: 0.5 }],
+        landing_pages: [{ path_canon: '/example', converted_sessions: 2, session_conversion_rate: 0.5 }],
+        sources: [{ value: 'example.test', converted_sessions: 2, session_conversion_rate: 0.5 }],
+        mediums: [{ value: 'referral', converted_sessions: 2, session_conversion_rate: 0.5 }],
+        campaigns: [{ value: 'example-campaign', converted_sessions: 1, session_conversion_rate: 0.25 }],
+      },
+    },
+    additional_public_field: { retained: true },
+  } satisfies components['schemas']['AcquisitionDetailsReportResponse'] & { additional_public_field: unknown };
+  let requests = 0;
+  const goalId = 'goal /?&test';
+  const client = createPomeloClient({ token: 'synthetic-test-token', fetch: async (input) => {
+    requests++;
+    const url = new URL(String(input));
+    assert.equal(url.pathname, '/v1/reports/acquisition');
+    assert.deepEqual(Object.fromEntries(url.searchParams), {
+      site_id: 'site-test', from: '2026-10-01', to: '2026-10-24', include: 'details', goal_id: goalId,
+    });
+    return Response.json(payload, { headers: {
+      'X-Request-Id': 'goal-header-request', 'X-RateLimit-Limit': '120',
+      'X-RateLimit-Remaining': '119', 'X-RateLimit-Reset': '1900000000',
+    } });
+  } });
+  const result = await client.reports.acquisition({ siteId: 'site-test', from: '2026-10-01', to: '2026-10-24', include: 'details', goalId });
+  assert.equal(requests, 1);
+  assert.deepEqual(result.data, payload);
+  assert.equal(result.metadata.metering, result.data.meta);
+  assert.deepEqual(result.metadata, {
+    requestId: 'goal-header-request', metering: payload.meta,
+    rateLimit: { limit: 120, remaining: 119, reset: 1900000000 },
+  });
+});
+
+test('omitting Acquisition goalId leaves goal selection and dates to the server', async () => {
+  const queries: Record<string, string>[] = [];
+  const client = createPomeloClient({ token: 'synthetic-test-token', fetch: async (input) => {
+    queries.push(Object.fromEntries(new URL(String(input)).searchParams));
+    return Response.json(variants.details);
+  } });
+  await client.reports.acquisition({ siteId: 'site-test', include: 'details' });
+  assert.deepEqual(queries, [
+    { site_id: 'site-test', include: 'details' },
+  ]);
 });

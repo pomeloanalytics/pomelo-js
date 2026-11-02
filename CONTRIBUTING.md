@@ -18,6 +18,10 @@ explicitly reviewed inputs. After an approved contract update, run `npm run gene
 changing files; it is included in `npm run check` and pull request CI.
 Do not invent endpoints, entitlement rules, or response
 fields in the SDK. Preserve the API's wire field names and response metadata.
+Import only the separately reviewed public `openapi.json` and `manifest.json`;
+do not copy the source application's policies, scripts, documentation or configuration.
+Follow [the public contract update guide](docs/releasing.md#update-the-public-contract)
+through focused behavior tests, examples, package inspection and candidate review.
 
 Add focused tests for behavior changes. Query options are derived from the public
 contract with camelCase names; API response bodies retain their wire names.
@@ -53,6 +57,8 @@ Its registry tarball was verified and installed in fresh consumers. That release
 does not have an OIDC provenance attestation. The workflow's first real OIDC
 staging remains to be qualified with the next separately reviewed beta version;
 do not create a new version just to exercise the workflow.
+The current source candidate is `0.1.0-beta.1` (unreleased); the published `beta`
+tag still selected `0.1.0-beta.0` in the 2026-11-02 registry snapshot.
 
 Do not add a privileged release workflow as part of an unrelated contribution.
 

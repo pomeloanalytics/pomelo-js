@@ -31,19 +31,45 @@ export async function runMockExample(): Promise<void> {
       mix_timeseries: [], channels: [],
     },
   };
+  const details: ApiData<'/v1/reports/acquisition'> = {
+    ...summary,
+    availability: { ...payload.availability, currentProfile: 'extended' },
+    compare: null,
+    current: {
+      goals_configured: true,
+      dimensions: { sources: [], mediums: [], campaigns: [], referrers: [] },
+      landing_pages: [],
+      impact: {
+        channels: [], landing_pages: [],
+        sources: [{ value: 'example.test', converted_sessions: 2, session_conversion_rate: 0.5 }],
+        mediums: [{ value: 'referral', converted_sessions: 2, session_conversion_rate: 0.5 }],
+        campaigns: [{ value: 'example-campaign', converted_sessions: 1, session_conversion_rate: 0.25 }],
+      },
+    },
+  };
   const client = createPomeloClient({
     token: 'synthetic-test-token',
     fetch: async (input) => {
       requests++;
-      return Response.json(new URL(String(input)).pathname === '/v1/reports/acquisition' ? summary : payload, { headers: { 'X-Request-Id': 'synthetic-header-request' } });
+      const url = new URL(String(input));
+      if (url.pathname === '/v1/reports/acquisition' && url.searchParams.get('include') === 'details') {
+        if (url.searchParams.get('goal_id') !== 'goal-test' || url.searchParams.has('goalId')) throw new Error('Invalid goal wire parameter.');
+        return Response.json(details, { headers: { 'X-Request-Id': 'synthetic-goal-request' } });
+      }
+      return Response.json(url.pathname === '/v1/reports/acquisition' ? summary : payload, { headers: { 'X-Request-Id': 'synthetic-header-request' } });
     },
   });
   const result = await client.metrics.timeseries({ siteId: 'site-test', from: '2026-10-01', to: '2026-10-01' });
   if (requests !== 1 || result.data.points[0]?.value !== 12 || result.data.availability.current.status !== 'available' || result.metadata.metering?.units_charged !== 1 || result.metadata.requestId !== 'synthetic-header-request') {
     throw new Error('The synthetic SDK consumer check failed.');
   }
-  const acquisition = await client.reports.acquisition({ siteId: 'site-test', include: 'summary' });
+  const acquisition = await client.reports.acquisition({ siteId: 'site-test', from: '2026-10-01', to: '2026-10-01', include: 'summary' });
   if (Number(requests) !== 2 || !('channels' in acquisition.data.current) || acquisition.data.current.goals_configured !== false) {
     throw new Error('The synthetic Acquisition consumer check failed.');
+  }
+  const goalImpact = await client.reports.acquisition({ siteId: 'site-test', from: '2026-10-01', to: '2026-10-01', include: 'details', goalId: 'goal-test' });
+  const current = goalImpact.data.current;
+  if (Number(requests) !== 3 || !('dimensions' in current) || current.impact?.sources[0]?.converted_sessions !== 2 || current.impact.mediums[0]?.value !== 'referral' || current.impact.campaigns[0]?.session_conversion_rate !== 0.25 || goalImpact.metadata.metering?.units_charged !== 1 || goalImpact.metadata.requestId !== 'synthetic-goal-request') {
+    throw new Error('The synthetic Acquisition goal impact consumer check failed.');
   }
 }

@@ -2,7 +2,8 @@
 
 Server-side TypeScript client for the Pomelo Analytics API.
 
-Beta version: `0.1.0-beta.0`. MIT licensed.
+Published beta: `0.1.0-beta.0`. This source prepares `0.1.0-beta.1` (unreleased).
+MIT licensed.
 
 Use Node.js 22.13+ on the Node 22 release line or Node.js 24. The package uses ESM
 and has no runtime dependencies. CommonJS consumers on these supported Node
@@ -16,6 +17,10 @@ fetch is called.
 ```sh
 npm install @pomeloanalytics/api@beta
 ```
+
+Registry snapshot on 2026-11-02: `beta` selects `0.1.0-beta.0`; `latest` selects
+the bootstrap `0.0.0-stage` placeholder. The candidate-only additions described
+below require a local `0.1.0-beta.1` tarball until a separate release is approved.
 
 ## Usage
 
@@ -109,6 +114,42 @@ deprecated alias for `full`. Actions accepts `summary`, `full`, and `details`
 using its single response schema; summary leaves detail lists empty on the server.
 Omitting `include` leaves the server's selection unchanged.
 
+### Acquisition goal impact in the unreleased candidate
+
+`0.1.0-beta.1` adds the optional `goalId` option for `include: 'details'`, sent as
+`goal_id`. It selects one configured goal belonging to the site. Omitting it
+leaves the server's union of configured goals unchanged. An unknown goal or use
+with another report variant is rejected by the server as `INVALID_PARAMS`.
+
+```ts
+const { data } = await pomelo.reports.acquisition({
+  siteId: 'site-test', from: '2026-10-01', to: '2026-10-24',
+  include: 'details', goalId: 'goal-test',
+});
+if ('dimensions' in data.current && data.current.impact) {
+  const { sources, mediums, campaigns } = data.current.impact;
+  // Items retain value, converted_sessions and session_conversion_rate.
+}
+```
+
+Impact is conditional on the server response and Extended data. It reports
+distinct converted visits using first-pageview attribution; repeated goal
+matches count once. Check availability as well as the optional impact object.
+The SDK supplies no impact defaults or enrichment.
+
+The API can also be read directly over HTTP without this package. From a server
+shell with `POMELO_API_TOKEN` configured outside the source tree:
+
+```sh
+curl --get 'https://api.pomeloanalytics.com/v1/reports/acquisition' \
+  --header "Authorization: Bearer ${POMELO_API_TOKEN}" \
+  --data-urlencode 'site_id=site-test' \
+  --data-urlencode 'from=2026-10-01' \
+  --data-urlencode 'to=2026-10-24' \
+  --data-urlencode 'include=details' \
+  --data-urlencode 'goal_id=goal-test'
+```
+
 HTTP 200 on a mixed route means its strict-safe baseline succeeded. Check
 `availability.sections` for sections that remain locked or only partially
 available. Tenant-scoped reads use a stable opaque `tenantId`; the server checks
@@ -148,7 +189,7 @@ npm pack --workspace @pomeloanalytics/api --ignore-scripts --pack-destination .a
 ```
 
 Install that tarball into another Node ESM project with
-`npm install /path/to/pomeloanalytics-api-0.1.0-beta.0.tgz`.
+`npm install /path/to/pomeloanalytics-api-0.1.0-beta.1.tgz`.
 
 The repository includes a server example and a runnable synthetic consumer.
 The package audit compiles and executes the synthetic consumer in a fresh

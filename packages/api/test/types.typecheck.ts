@@ -4,7 +4,7 @@ import type { PomeloClient, TimeseriesParams, AcquisitionParams, ActionsParams, 
 export function checkPublicTypes(client: PomeloClient): void {
   const params: TimeseriesParams = { siteId: 'site-test', tenantId: 'tenant-test', metric: 'sessions', interval: 'day', from: '2026-10-01', to: '2026-10-24' };
   void client.metrics.timeseries(params);
-  const acquisition: AcquisitionParams = { siteId: 'site-test', include: 'summary' };
+  const acquisition: AcquisitionParams = { siteId: 'site-test', include: 'details', goalId: 'goal-test' };
   const actions: ActionsParams = { siteId: 'site-test', include: 'details' };
   void client.reports.actions(actions);
   void client.reports.acquisition(acquisition).then(({ data }) => {
@@ -23,6 +23,16 @@ export function checkPublicTypes(client: PomeloClient): void {
     }
     const dimensions: components['schemas']['UserApiAcquisitionDetailsCurrent']['dimensions'] = current.dimensions;
     const impact: components['schemas']['AcquisitionImpact'] | null | undefined = current.impact;
+    if (impact) {
+      const sources: components['schemas']['AcquisitionDimensionImpactItem'][] = impact.sources;
+      const mediums: components['schemas']['AcquisitionDimensionImpactItem'][] = impact.mediums;
+      const campaigns: components['schemas']['AcquisitionDimensionImpactItem'][] = impact.campaigns;
+      const converted: number | undefined = sources[0]?.converted_sessions;
+      const rate: number | undefined = campaigns[0]?.session_conversion_rate;
+      void { mediums, converted, rate };
+      // @ts-expect-error response fields retain their wire names.
+      void sources[0]?.convertedSessions;
+    }
     // @ts-expect-error details is a distinct Acquisition shape.
     void current.by_channel;
     return { dimensions, impact };
@@ -47,4 +57,8 @@ export function checkPublicTypes(client: PomeloClient): void {
   void client.goals.create({ siteId: 'site-test' });
   // @ts-expect-error include is a public contract enum.
   void client.reports.acquisition({ siteId: 'site-test', include: 'unknown' });
+  // @ts-expect-error goalId is a string identifier from the reviewed contract.
+  void client.reports.acquisition({ siteId: 'site-test', goalId: 123 });
+  // @ts-expect-error wire names are not SDK option names.
+  void client.reports.acquisition({ siteId: 'site-test', goal_id: 'goal-test' });
 }
