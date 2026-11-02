@@ -35,32 +35,28 @@ framework integrations that render on both the server and client.
 
 ## Release preparation
 
-Only the API package has publishable metadata, selecting the public npm registry, public
-access, and the `beta` tag. The workspace remains private. Merging source or
-packing a tarball does not authorize publication. A separate owner GO must name
-the reviewed source commit and tarball checksum before any bootstrap or staging
-operation. The [manual release workflow](docs/releasing.md) stages the approved
-API beta prereleases only; a maintainer must approve each staged version outside the workflow.
+Only the API package is publishable; the workspace stays private. Its default
+publication tag is `beta`. A source merge or local tarball check does not authorize
+publication. The owner approves the exact version, source commit, archive SHA256
+and intended tags before manually dispatching the [existing release workflow](docs/releasing.md).
 
-The package must exist on npm before [trusted publishing can be configured](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
-Treat bootstrap as a one-time owner-approved operation: even
-[staging a new package](https://docs.npmjs.com/staged-publishing/) creates a public
-`0.0.0-stage` placeholder. Before later automation, review and configure its exact
-workflow and trusted publisher together. A new
-[trusted publisher](https://docs.npmjs.com/trusted-publishers/#trusted-publisher-configuration-expiry)
-must complete its first successful publication within two days or it expires.
-Staging requires maintainer approval with 2FA before the candidate goes live.
-Bootstrap provenance and OIDC have not been demonstrated by local checks.
+The workflow prepares and verifies the archive with read-only permissions, then
+publishes those exact bytes through OIDC with provenance. It uses no permanent
+npm token. The account keeps 2FA; routine OIDC publication does not include a
+separate npm staging approval. Browser sign-in, account settings and publisher
+permission changes may still require human MFA.
 
-The initial `0.1.0-beta.0` was published through manual staging and 2FA approval.
-Its registry tarball was verified and installed in fresh consumers. That release
-does not have an OIDC provenance attestation. The first real OIDC staging and
-provenance were verified with the useful
-`0.1.0-beta.1` release on 2026-11-02. Its registry archive matched the approved
-checksum, and signature/attestation verification and isolated mocked consumers
-passed. See the [release record](docs/releasing.md#verified-beta1-release).
-The `beta` tag selects this version; `latest` still selects the bootstrap
-placeholder. Do not create a new version just to exercise publishing.
+Configure the publisher once for this repository, `release.yml` and `npm-beta`.
+Direct publication requires its explicit permission; moving `latest` additionally
+requires dist-tag permission and an explicit owner GO. An unchanged tag needs no
+update. The workflow preserves `latest` unless its promotion was requested with
+the expected previous version. Keep package versions and source tags immutable.
+
+The initial beta0 used manual staging without OIDC provenance. Beta1 qualified
+OIDC staging, provenance and registry installation on 2026-11-02; its API responses
+were mocked. See the [historical release record](docs/releasing.md#verified-beta1-release).
+Qualify the direct path on the next useful approved release, not an artificial
+version created to test publishing.
 
 Do not add a privileged release workflow as part of an unrelated contribution.
 

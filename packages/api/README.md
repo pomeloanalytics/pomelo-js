@@ -1,9 +1,17 @@
 # @pomeloanalytics/api
 
-Server-side TypeScript client for the Pomelo Analytics API.
+Read your Pomelo Analytics data from a Node.js backend. This TypeScript client
+provides typed access to sites, reports, goals and API usage.
 
-This package uses the `beta` prerelease line. Its exact version is recorded in
-[package.json](package.json). MIT licensed.
+[Website](https://www.pomeloanalytics.com/) ·
+[Getting started](https://docs.pomeloanalytics.com/en/getting-started/) ·
+[Démarrer en français](https://docs.pomeloanalytics.com/fr/getting-started/) ·
+[API reference](https://docs.pomeloanalytics.com/en/api-reference/) ·
+[Source and issues](https://github.com/pomeloanalytics/pomelo-js)
+
+This package uses the `beta` prerelease line and is licensed under MIT. Check
+the version shown by npm before installing. Browser pageviews and events are
+collected by Pomelo's tracking script, installed through the getting-started guide.
 
 Use Node.js 22.13+ on the Node 22 release line or Node.js 24. The package uses ESM
 and has no runtime dependencies. CommonJS consumers on these supported Node
@@ -27,7 +35,7 @@ npm view @pomeloanalytics/api dist-tags versions --json
 A source checkout or local tarball may contain an unpublished candidate.
 Registry metadata determines which versions are available from npm.
 
-## Usage
+## First API call
 
 ```ts
 import { createPomeloClient } from '@pomeloanalytics/api';
@@ -37,6 +45,20 @@ const token = process.env.POMELO_API_TOKEN;
 if (!token) throw new Error('Configure POMELO_API_TOKEN on the server.');
 const pomelo = createPomeloClient({ token });
 
+// Check which account and permissions the token can access.
+const { data: account } = await pomelo.me();
+```
+
+Create a read token in the Pomelo dashboard as described in the getting-started
+guide. Keep it in server configuration, outside source control and browser code.
+API access depends on your plan and the token's permissions. The API enforces
+collection-profile availability for each endpoint.
+
+## Read metrics
+
+Use a site ID returned by `pomelo.sites.list()` and explicit inclusive UTC dates:
+
+```ts
 const result = await pomelo.metrics.timeseries({
   siteId: 'site-test',
   from: '2026-10-01',
@@ -183,20 +205,8 @@ identifier takes precedence in response metadata.
 Response bodies retain API field names, including `snake_case`, `availability`,
 and metering metadata. There is no cache, aggregation, or fallback endpoint.
 
-## Local package
+## Help and contributions
 
-From the repository root, verify and create an installable local tarball:
-
-```sh
-npm ci
-npm run check
-mkdir -p .artifacts
-npm pack --workspace @pomeloanalytics/api --ignore-scripts --pack-destination .artifacts
-```
-
-Install that tarball into another Node ESM project with
-`npm install /path/to/pomeloanalytics-api-0.1.0-beta.1.tgz`.
-
-The repository includes a server example and a runnable synthetic consumer.
-The package audit compiles and executes the synthetic consumer in a fresh
-temporary project using the local tarball. It makes no call to the live API.
+- [Documentation](https://docs.pomeloanalytics.com/en/getting-started/) for setup and API access.
+- [Issues](https://github.com/pomeloanalytics/pomelo-js/issues) for SDK bugs, without tokens or private report data.
+- [Contributing](https://github.com/pomeloanalytics/pomelo-js/blob/main/CONTRIBUTING.md) for local checks, examples and release preparation.
