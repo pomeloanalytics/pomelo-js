@@ -54,11 +54,13 @@ Bootstrap provenance and OIDC have not been demonstrated by local checks.
 
 The initial `0.1.0-beta.0` was published through manual staging and 2FA approval.
 Its registry tarball was verified and installed in fresh consumers. That release
-does not have an OIDC provenance attestation. The workflow's first real OIDC
-staging remains to be qualified with the next separately reviewed beta version;
-do not create a new version just to exercise the workflow.
-The current source candidate is `0.1.0-beta.1` (unreleased); the published `beta`
-tag still selected `0.1.0-beta.0` in the 2026-11-02 registry snapshot.
+does not have an OIDC provenance attestation. The first real OIDC staging and
+provenance were verified with the useful
+`0.1.0-beta.1` release on 2026-11-02. Its registry archive matched the approved
+checksum, and signature/attestation verification and isolated mocked consumers
+passed. See the [release record](docs/releasing.md#verified-beta1-release).
+The `beta` tag selects this version; `latest` still selects the bootstrap
+placeholder. Do not create a new version just to exercise publishing.
 
 Do not add a privileged release workflow as part of an unrelated contribution.
 

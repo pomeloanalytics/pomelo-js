@@ -3,15 +3,36 @@
 The API package's initial beta version is `0.1.0-beta.0` under MIT.
 Its publication metadata selects the public npm registry with
 public access and the `beta` tag. The workspace remains `private: true`.
-The manual [release workflow](../.github/workflows/release.yml) stages this API
+The manual [release workflow](../.github/workflows/release.yml) stages API
 beta prereleases only. It contains no registry credential and cannot approve a staged package.
 
-The current source prepares `0.1.0-beta.1` (unreleased) for the Acquisition
-`goalId` option and source/medium/campaign impact types. As of 2026-11-02, npm
-has `0.1.0-beta.0` on `beta` and the bootstrap `0.0.0-stage` on `latest`.
-Installing `@beta` does not yet install this candidate. Verify current registry
-versions and tags with `npm view @pomeloanalytics/api dist-tags versions --json`
-when admitting any release.
+The published beta is `0.1.0-beta.1`, including the Acquisition `goalId` option
+and source/medium/campaign impact types. In the 2026-11-02 registry snapshot,
+`beta` selects this version and `latest` still selects the bootstrap
+`0.0.0-stage`. Install with `@beta`; the default npm package page still shows the
+placeholder. Link to the [published beta page](https://www.npmjs.com/package/@pomeloanalytics/api/v/0.1.0-beta.1)
+when sharing this release. Verify current tags with
+`npm view @pomeloanalytics/api dist-tags versions --json` for each later release.
+
+## Verified beta1 release
+
+- Version: `0.1.0-beta.1`, source tag `api-v0.1.0-beta.1` at
+  `44812d1bd42cc8a261fb51669b72b77a481d6a05`.
+- Approved and registry tarball SHA256:
+  `977d7648af156929faefafe1206813c19f0234addbe8ba8c60193c43fc84410a`.
+- The existing [staging workflow](https://github.com/pomeloanalytics/pomelo-js/actions/runs/41441644626)
+  authenticated through OIDC; a maintainer approved publication with 2FA.
+- The registry SLSA provenance binds this archive to the source, workflow and
+  run above. `npm audit signatures` verified the registry signature and
+  attestation. Installation from the registry, strict TypeScript compilation,
+  and isolated ESM/CommonJS consumers using the existing mock fixture passed.
+- These are package distribution and mocked consumer checks, not a new
+  authenticated API acceptance test. No provenance is claimed retroactively
+  for the manual beta0 bootstrap.
+
+Pass a staged tarball as an explicit local path (`./candidate/package.tgz` or an
+absolute path). A bare `candidate/package.tgz` can be interpreted as a GitHub
+repository shorthand. Keep the approved checksum and existing source/tag guards.
 
 ## Update the public contract
 
@@ -83,8 +104,8 @@ No OIDC provenance attestation is claimed for this manual bootstrap.
 Before that release, creating a trusted publisher returned `404` while registry
 metadata existed without published versions and the package page returned `404`.
 A staged placeholder alone did not establish working publisher configuration.
-Qualify the first real OIDC operation with the next reviewed beta release, without
-creating a version only to test this path. No unused publisher should be retained.
+The first real OIDC operation is recorded in the [beta1 release](#verified-beta1-release).
+Do not create versions only to test publishing. No unused publisher should be retained.
 
 npm also created the public `0.0.0-stage` placeholder. `beta` selects the SDK;
 `latest` still selects that placeholder. Do not promote a prerelease to `latest`.
