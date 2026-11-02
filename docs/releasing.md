@@ -6,6 +6,37 @@ public access and the `beta` tag. The workspace remains `private: true`.
 The manual [release workflow](../.github/workflows/release.yml) stages this API
 beta prereleases only. It contains no registry credential and cannot approve a staged package.
 
+The current source prepares `0.1.0-beta.1` (unreleased) for the Acquisition
+`goalId` option and source/medium/campaign impact types. As of 2026-11-02, npm
+has `0.1.0-beta.0` on `beta` and the bootstrap `0.0.0-stage` on `latest`.
+Installing `@beta` does not yet install this candidate. Verify current registry
+versions and tags with `npm view @pomeloanalytics/api dist-tags versions --json`
+when admitting any release.
+
+## Update the public contract
+
+Use only a separately reviewed public export: `openapi.json` and its matching
+`manifest.json`. Review their diff, operation list, source identity and artifact
+SHA256 before replacing the files in `contracts/`. Do not transfer application
+source, export policies, internal documentation, configuration or customer data.
+
+Run `npm run generate`, then inspect the generated diff. Query options derive
+their camelCase names from this contract; responses keep API wire names and
+metadata. Reuse the existing client and transport. Do not invent fields or
+duplicate server rules for dates, quotas, entitlements or report variants.
+
+Add focused synthetic tests for the changed request and response behavior and
+compile a consumer against the public exports. Update relevant examples and
+documentation. Keep API tokens server-side and dates explicit in examples;
+direct HTTP consumers remain supported without installing the SDK.
+
+Choose the next useful package version with SemVer, update the package manifest,
+lockfile and package changelog, and mark an unpublished candidate clearly. An
+OpenAPI change is not an npm release. Do not create artificial versions to test
+publishing infrastructure. Run `npm run check` and `npm audit --audit-level=high`;
+`check:generated`, tests, examples and the isolated tarball audit are included.
+Review the final diff and both supported Node CI results before admitting delivery.
+
 ## Review a candidate locally
 
 Run `npm ci --ignore-scripts` and `npm run check`. The check verifies the reviewed
@@ -23,6 +54,8 @@ Record the source commit and tarball SHA256. Review the actual file list,
 exports, licence, changelog and generated declarations. Confirm the reviewed
 source has passed both supported Node checks. Consumer acceptance and a real
 authenticated API test are separate evidence; mocks do not establish either.
+The package audit prints the SHA256 and npm integrity of the exact tarball it
+installed and exercised. Compare these with any retained candidate tarball.
 
 ## Admit a release separately
 
@@ -30,6 +63,9 @@ The owner must approve the exact package, version, tarball checksum and registry
 action. Staging also requires that approval: for a new package, npm makes a
 public `0.0.0-stage` placeholder even before approving the staged contents.
 Do not run a staging command as a read-only verification.
+Record the exact reviewed source SHA, current npm version/tag snapshot and
+tarball integrity with that decision. A review-ready PR alone does not admit
+merging, tagging, staging, publishing, publisher configuration or dist-tag changes.
 
 The first package bootstrap is a one-time operation requiring a distinct owner
 GO. It must precede trusted publisher setup because the

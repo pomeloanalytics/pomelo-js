@@ -27,6 +27,17 @@
       }
     },
     "parameters": {
+      "AcquisitionGoalId": {
+        "description": "Acquisition `include=details` only. Selects one configured goal belonging\nto the requested site for conversion impact. Omission uses the union\nof all configured goals. An unknown goal or another report variant\nreturns `INVALID_PARAMS` without charging usage.\n",
+        "in": "query",
+        "name": "goal_id",
+        "required": false,
+        "schema": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
       "ActionFamily": {
         "description": "Filter action reports by normalized action family.",
         "in": "query",
@@ -443,6 +454,25 @@
           }
         ]
       },
+      "AcquisitionDimensionImpactItem": {
+        "properties": {
+          "converted_sessions": {
+            "type": "number"
+          },
+          "session_conversion_rate": {
+            "type": "number"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "converted_sessions",
+          "session_conversion_rate"
+        ],
+        "type": "object"
+      },
       "AcquisitionDimensionItem": {
         "allOf": [
           {
@@ -488,7 +518,14 @@
         ]
       },
       "AcquisitionImpact": {
+        "description": "Extended-only goal impact. Each dimension comes from the visit's\ncanonical first pageview in the requested scope. A converted visit\nmatches at least one selected goal through an eligible Extended event;\nrepeated matches count once. Rates divide converted visits by eligible\nExtended visits in the same dimension, period and traffic scope.\n",
         "properties": {
+          "campaigns": {
+            "items": {
+              "$ref": "#/components/schemas/AcquisitionDimensionImpactItem"
+            },
+            "type": "array"
+          },
           "channels": {
             "items": {
               "properties": {
@@ -542,11 +579,26 @@
               "type": "object"
             },
             "type": "array"
+          },
+          "mediums": {
+            "items": {
+              "$ref": "#/components/schemas/AcquisitionDimensionImpactItem"
+            },
+            "type": "array"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/AcquisitionDimensionImpactItem"
+            },
+            "type": "array"
           }
         },
         "required": [
           "channels",
-          "landing_pages"
+          "landing_pages",
+          "sources",
+          "mediums",
+          "campaigns"
         ],
         "type": "object"
       },
@@ -4135,7 +4187,7 @@
     },
     "/v1/reports/acquisition": {
       "get": {
-        "description": "Mixed route family. The strict-safe slice exposes channels, host-only\nreferrers, and landing pages. Attribution slices such as sources,\nmediums, and campaigns remain profile-gated. Read\n`availability.readModel` for the route split, then inspect\n`availability.sections` as `acquisition_attribution`.\nWhen report include selection is enabled, `include` selects the response\ndepth and omission selects `summary`. Otherwise, `include` is ignored\nand the handler uses `full`.\n`include=summary` returns `current.channels`, coverage and mix timeseries.\n`full` returns `current.by_channel` and top lists. `details` returns\ndimensions, landing pages and optional goal impact; it is a distinct\nAcquisition variant, not the Content alias for full.\n",
+        "description": "Mixed route family. The strict-safe slice exposes channels, host-only\nreferrers, and landing pages. Attribution slices such as sources,\nmediums, and campaigns remain profile-gated. Read\n`availability.readModel` for the route split, then inspect\n`availability.sections` as `acquisition_attribution`.\nWhen report include selection is enabled, `include` selects the response\ndepth and omission selects `summary`. Otherwise, `include` is ignored\nand the handler uses `full`.\n`include=summary` returns `current.channels`, coverage and mix timeseries.\n`full` returns `current.by_channel` and top lists. `details` returns\ndimensions, landing pages and optional goal impact; it is a distinct\nAcquisition variant, not the Content alias for full.\n`goal_id` optionally selects one configured site goal for `details`\nimpact. Impact reports distinct converted visits and rates by channel,\nlanding page, source, medium and campaign using first-pageview\nattribution; omission uses the union of the site's configured goals.\n",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestIdHeader"
@@ -4163,6 +4215,9 @@
           },
           {
             "$ref": "#/components/parameters/ReportInclude"
+          },
+          {
+            "$ref": "#/components/parameters/AcquisitionGoalId"
           }
         ],
         "responses": {

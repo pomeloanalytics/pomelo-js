@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0-beta.1
+
+- Sync the reviewed public contract for optional Acquisition `goalId` selection
+  with `include: 'details'`, transmitted as `goal_id` by the existing client.
+- Add generated dimension impact types for sources, mediums and campaigns,
+  preserving API field names, conditional impact and complete response metadata.
+- Verify goal selection and dimension impacts in typed, wire and isolated
+  tarball consumers; document candidate and published beta versions separately.
+
 ## 0.1.0-beta.0
 
 - Prepare the server-side API client with injected fetch, request cancellation,

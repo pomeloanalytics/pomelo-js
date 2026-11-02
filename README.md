@@ -3,6 +3,9 @@
 This workspace contains the server-side TypeScript client for the Pomelo Analytics API.
 
 The initial `@pomeloanalytics/api` beta is `0.1.0-beta.0`, licensed under MIT.
+This source prepares `0.1.0-beta.1`, which is unreleased. Its Acquisition goal
+filter and dimension impact types are available from a locally built candidate,
+not from the published beta below.
 
 ```sh
 npm install @pomeloanalytics/api@beta
@@ -10,6 +13,8 @@ npm install @pomeloanalytics/api@beta
 
 Use the explicit `beta` tag. npm created a `0.0.0-stage` placeholder during
 bootstrap; no SDK version has been promoted to `latest`.
+Registry snapshot on 2026-11-02: `beta` selects `0.1.0-beta.0` and `latest`
+selects `0.0.0-stage`. Recheck the tags before preparing a release.
 Future releases require approval of their exact source and tarball;
 see [release preparation](CONTRIBUTING.md#release-preparation).
 
@@ -37,6 +42,8 @@ with its SHA256 checked against [contracts/manifest.json](contracts/manifest.jso
 `npm run generate` updates the types; `npm run check:generated` verifies the
 checksum and deterministic output without writing files. The SDK does not contain the
 Pomelo application, infrastructure, deployment tooling, or analytics engine.
+For a contract or SDK change, follow the bounded [update and release guide](docs/releasing.md#update-the-public-contract),
+including tests, examples, the package audit and review of an exact candidate.
 
 The CDN script remains the primary collection installation path. This repository
 currently contains the API client only.

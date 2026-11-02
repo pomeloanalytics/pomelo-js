@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
@@ -52,6 +53,7 @@ try {
   }
   const [packed] = JSON.parse(run(npm, ['pack', '--ignore-scripts', '--json', '--pack-destination', temporary], packageDir));
   const tarball = join(temporary, packed.filename);
+  const sha256 = createHash('sha256').update(await readFile(tarball)).digest('hex');
   const archiveFiles = run('tar', ['-tzf', tarball]).trim().split('\n').sort();
   assert.deepEqual(archiveFiles, dryRun.files.map((file) => `package/${file.path}`).sort());
   await writeFile(join(temporary, 'package.json'), JSON.stringify({ name: 'pomelo-api-consumer-smoke', private: true, type: 'module' }));
@@ -77,6 +79,7 @@ try {
   ].join('\n'));
   run(process.execPath, ['consumer.cjs'], temporary);
   console.log(`Tarball audited: ${manifest.name}@${manifest.version}, ${dryRun.files.length} allowlisted files; fresh ESM and CommonJS consumers ran.`);
+  console.log(`Tarball SHA256: ${sha256}; integrity: ${packed.integrity}`);
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }

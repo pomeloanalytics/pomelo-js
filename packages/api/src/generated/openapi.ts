@@ -345,6 +345,10 @@ export interface paths {
          *     `full` returns `current.by_channel` and top lists. `details` returns
          *     dimensions, landing pages and optional goal impact; it is a distinct
          *     Acquisition variant, not the Content alias for full.
+         *     `goal_id` optionally selects one configured site goal for `details`
+         *     impact. Impact reports distinct converted visits and rates by channel,
+         *     landing page, source, medium and campaign using first-pageview
+         *     attribution; omission uses the union of the site's configured goals.
          */
         get: {
             parameters: {
@@ -353,6 +357,13 @@ export interface paths {
                     compare?: components["parameters"]["CompareParam"];
                     /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
+                    /**
+                     * @description Acquisition `include=details` only. Selects one configured goal belonging
+                     *     to the requested site for conversion impact. Omission uses the union
+                     *     of all configured goals. An unknown goal or another report variant
+                     *     returns `INVALID_PARAMS` without charging usage.
+                     */
+                    goal_id?: components["parameters"]["AcquisitionGoalId"];
                     /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. */
                     include?: components["parameters"]["ReportInclude"];
                     /** @description Number of rows returned by top lists for report endpoints. */
@@ -879,6 +890,11 @@ export interface components {
             compare: components["schemas"]["UserApiAcquisitionDetailsCurrent"] | null;
             current: components["schemas"]["UserApiAcquisitionDetailsCurrent"];
         };
+        AcquisitionDimensionImpactItem: {
+            converted_sessions: number;
+            session_conversion_rate: number;
+            value: string;
+        };
         AcquisitionDimensionItem: components["schemas"]["AcquisitionSummaryTotals"] & {
             favicon_url?: string | null;
             share: number;
@@ -887,7 +903,15 @@ export interface components {
         AcquisitionFullReportResponse: components["schemas"]["UserApiAcquisitionEnvelope"] & {
             meta: components["schemas"]["MeteredMeta"];
         };
+        /**
+         * @description Extended-only goal impact. Each dimension comes from the visit's
+         *     canonical first pageview in the requested scope. A converted visit
+         *     matches at least one selected goal through an eligible Extended event;
+         *     repeated matches count once. Rates divide converted visits by eligible
+         *     Extended visits in the same dimension, period and traffic scope.
+         */
         AcquisitionImpact: {
+            campaigns: components["schemas"]["AcquisitionDimensionImpactItem"][];
             channels: {
                 /** @enum {string} */
                 channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
@@ -899,6 +923,8 @@ export interface components {
                 path_canon: string | null;
                 session_conversion_rate: number;
             }[];
+            mediums: components["schemas"]["AcquisitionDimensionImpactItem"][];
+            sources: components["schemas"]["AcquisitionDimensionImpactItem"][];
         };
         AcquisitionLandingPageSummaryItem: components["schemas"]["AcquisitionSummaryTotals"] & {
             page_title?: string | null;
@@ -1815,6 +1841,13 @@ export interface components {
         };
     };
     parameters: {
+        /**
+         * @description Acquisition `include=details` only. Selects one configured goal belonging
+         *     to the requested site for conversion impact. Omission uses the union
+         *     of all configured goals. An unknown goal or another report variant
+         *     returns `INVALID_PARAMS` without charging usage.
+         */
+        AcquisitionGoalId: string;
         /** @description Filter action reports by normalized action family. */
         ActionFamily: "goals" | "forms" | "outbound" | "downloads" | "errors" | "custom" | "instrumentation";
         /** @description Filter action reports by normalized action key. */

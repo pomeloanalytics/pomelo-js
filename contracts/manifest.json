@@ -1,7 +1,7 @@
 {
   "artifact": {
     "path": "openapi.json",
-    "sha256": "7c9d07716ecb881861db5bb4b440926467b09aa2e080971d5df469be4b463e39"
+    "sha256": "239d94374b0e5df19c839599268e6a4c7e949fb592097c0c704cf9c0d941c3bb"
   },
   "components": {
     "headers": [
@@ -11,6 +11,7 @@
       "XRequestId"
     ],
     "parameters": [
+      "AcquisitionGoalId",
       "ActionFamily",
       "ActionKey",
       "BreakdownDimension",
@@ -42,6 +43,7 @@
       "AcquisitionChannelItem",
       "AcquisitionCoverage",
       "AcquisitionDetailsReportResponse",
+      "AcquisitionDimensionImpactItem",
       "AcquisitionDimensionItem",
       "AcquisitionFullReportResponse",
       "AcquisitionImpact",
@@ -193,7 +195,7 @@
   ],
   "policy": {
     "path": "openapi/public-export-policy.json",
-    "sha256": "b78eb3d3a01a2761e74cdf23bf865b14362ae10004d519287ee0e891c5f1fecb",
+    "sha256": "3643d5135d38c5dca9196561a2946bb044147d1c9f21ce5cb7eca9a54affb957",
     "version": 1
   },
   "projections": [
@@ -202,7 +204,14 @@
       "kind": "reviewed-prose-replacement",
       "outputSha256": "3b485bf4d41583812386e6736e127dd6852e0659f493806f9a4cbf09e2293eec",
       "pointer": "/components/parameters/FromDate/description",
-      "sourceSha256": "0d74ed7bd7db37c10b66d0db39c2ff07eb27079bead3e6914cf9d6089604ed70"
+      "sourceSha256": "af2489906ca0168d10d6fb705a18a5f7498d7b84b3095dbb035cd18b5ff5632e"
+    },
+    {
+      "compatibility": "documentation-only",
+      "kind": "reviewed-prose-replacement",
+      "outputSha256": "ded9bd1b9a6ad6531a5e308986435f20dcb505f8d3952e540ee2cd3e0c3cd626",
+      "pointer": "/components/parameters/ToDate/description",
+      "sourceSha256": "3cde5e9d66f765dc74157e06d52158466658383e8b3fbea39b93d3c4565c3257"
     },
     {
       "compatibility": "type-widening",
@@ -235,9 +244,9 @@
   ],
   "proof": "Source-only projection; no deployed artifact or authenticated runtime verification.",
   "source": {
-    "commit": "9a154693d7fa7f52480861409112cec3bf7d705e",
+    "commit": "c560dac6f917fbe5d2eea9a92339068bceba8c28",
     "path": "openapi/v1.yaml",
-    "sha256": "438e4afbe6d2f950004d9c1eb2fac485ef54e4941fecf13dfeb018ab0e746a01"
+    "sha256": "b7818d2f99bc85c342d81f96bf780e2cbe855ac29bade43e5affd612a3b2041a"
   },
   "version": 1
 }
