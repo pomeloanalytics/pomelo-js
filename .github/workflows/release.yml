@@ -155,16 +155,16 @@ jobs:
           const version = process.env.API_VERSION;
           const promote = process.env.PROMOTE_LATEST === 'true';
           const npm = (...args) => execFileSync('npm', [...args, '--registry', registry], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
-          const read = async (url) => {
-            const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
+          const read = async (url, timeoutMs = 5000) => {
+            const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' }, cache: 'no-store', signal: AbortSignal.timeout(timeoutMs) });
             assert.ok(response.ok, `Registry read failed: ${response.status}`);
             return response.json();
           };
-          const verifyArchive = async (metadata) => {
+          const verifyArchive = async (metadata, timeoutMs = 5000) => {
             assert.equal(metadata.name, name);
             assert.equal(metadata.version, version);
             assert.equal(new URL(metadata.dist.tarball).origin, registry.slice(0, -1));
-            const response = await fetch(metadata.dist.tarball);
+            const response = await fetch(metadata.dist.tarball, { signal: AbortSignal.timeout(timeoutMs) });
             assert.ok(response.ok, `Registry archive read failed: ${response.status}`);
             const bytes = Buffer.from(await response.arrayBuffer());
             assert.equal(createHash('sha256').update(bytes).digest('hex'), process.env.EXPECTED_SHA256, 'Registry archive mismatch');
@@ -178,16 +178,33 @@ jobs:
           const existing = before.versions?.[version];
           if (existing) await verifyArchive(existing);
           else npm('publish', `./candidate/pomeloanalytics-api-${version}.tgz`, '--ignore-scripts', '--tag', 'beta', '--access', 'public', '--provenance', '--json', '--loglevel=error');
-          const published = await read(`${metadataUrl}/${version}`);
-          await verifyArchive(published);
-          const tags = () => JSON.parse(npm('view', name, 'dist-tags', '--json'));
-          const current = tags();
-          assert.equal(current.beta, version, 'Beta tag does not select the approved version');
-          if (promote) {
-            assert.ok([process.env.EXPECTED_LATEST, version].includes(current.latest), 'Latest changed before promotion');
-            if (current.latest !== version) npm('dist-tag', 'add', `${name}@${version}`, 'latest');
+          // Registry reads may lag an acknowledged write. Never replay a write here.
+          const deadline = Date.now() + 30000;
+          let reads = 0;
+          const observe = async (ready) => {
+            while (reads < 10 && Date.now() < deadline) {
+              const snapshot = await read(metadataUrl, Math.min(5000, deadline - Date.now()));
+              reads++;
+              const tags = snapshot['dist-tags'];
+              assert.ok([before['dist-tags'].beta, version].includes(tags.beta), 'Unexpected beta tag');
+              assert.ok([before['dist-tags'].latest, version].includes(tags.latest), 'Latest changed before promotion');
+              if (Date.now() < deadline && ready(snapshot)) return snapshot;
+              if (reads < 10 && Date.now() < deadline) {
+                await new Promise((resolve) => setTimeout(resolve, Math.min(1000, deadline - Date.now())));
+              }
+            }
+            throw new Error('Registry verification pending after acknowledged write; no write replayed');
+          };
+          const published = await observe((snapshot) => Boolean(snapshot.versions?.[version]));
+          await verifyArchive(published.versions[version], Math.max(1, Math.min(5000, deadline - Date.now())));
+          const current = (await observe((snapshot) => snapshot['dist-tags'].beta === version))['dist-tags'];
+          assert.ok(Date.now() < deadline, 'Registry verification deadline expired before tag update');
+          let after = current;
+          if (promote && current.latest !== version) {
+            assert.ok(reads < 10, 'Registry verification pending before tag update; no tag write sent');
+            npm('dist-tag', 'add', `${name}@${version}`, 'latest');
+            after = (await observe((snapshot) => snapshot['dist-tags'].beta === version && snapshot['dist-tags'].latest === version))['dist-tags'];
           }
-          const after = tags();
           assert.equal(after.beta, version);
           assert.equal(after.latest, promote ? version : before['dist-tags'].latest, 'Unexpected latest tag');
           const receipt = { name, version, source: process.env.SOURCE_SHA, sha256: process.env.EXPECTED_SHA256, alreadyPublished: Boolean(existing), before: before['dist-tags'], after };
