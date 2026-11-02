@@ -84,6 +84,14 @@ hide a failure. If the exact version already exists, the workflow verifies its
 archive instead of publishing it again; tag readbacks must still match the
 approved target. A different archive for that version stops the operation.
 
+Registry reads can briefly lag successful writes. The workflow uses fresh HTTP
+metadata reads with one shared 30-second/10-read limit after publication, including
+bounded waits and per-read timeouts. Only the captured previous aliases may remain
+pending; an unrelated value or different archive fails immediately. Neither
+`publish` nor `dist-tag` runs inside that read-only loop. An expired readback is
+partial/unknown verification, not proof that the write failed or permission to
+repeat it. Preserve completed effects and inspect the registry before resuming.
+
 If publication succeeds and an alias step fails, retain that partial result and
 qualify the tag/source state before a bounded continuation with the same reviewed
 inputs. If main has moved, the source guard stops a rerun; qualify the necessary
