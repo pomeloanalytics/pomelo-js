@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0-beta.1 (unreleased)
+## 0.1.0-beta.1
 
 - Sync the reviewed public contract for optional Acquisition `goalId` selection
   with `include: 'details'`, transmitted as `goal_id` by the existing client.

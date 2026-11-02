@@ -2,8 +2,8 @@
 
 Server-side TypeScript client for the Pomelo Analytics API.
 
-Published beta: `0.1.0-beta.0`. This source prepares `0.1.0-beta.1` (unreleased).
-MIT licensed.
+This package uses the `beta` prerelease line. Its exact version is recorded in
+[package.json](package.json). MIT licensed.
 
 Use Node.js 22.13+ on the Node 22 release line or Node.js 24. The package uses ESM
 and has no runtime dependencies. CommonJS consumers on these supported Node
@@ -18,9 +18,14 @@ fetch is called.
 npm install @pomeloanalytics/api@beta
 ```
 
-Registry snapshot on 2026-11-02: `beta` selects `0.1.0-beta.0`; `latest` selects
-the bootstrap `0.0.0-stage` placeholder. The candidate-only additions described
-below require a local `0.1.0-beta.1` tarball until a separate release is approved.
+Check the registry versions and dist-tags before choosing an installation:
+
+```sh
+npm view @pomeloanalytics/api dist-tags versions --json
+```
+
+A source checkout or local tarball may contain an unpublished candidate.
+Registry metadata determines which versions are available from npm.
 
 ## Usage
 
@@ -114,10 +119,11 @@ deprecated alias for `full`. Actions accepts `summary`, `full`, and `details`
 using its single response schema; summary leaves detail lists empty on the server.
 Omitting `include` leaves the server's selection unchanged.
 
-### Acquisition goal impact in the unreleased candidate
+### Acquisition goal impact
 
-`0.1.0-beta.1` adds the optional `goalId` option for `include: 'details'`, sent as
-`goal_id`. It selects one configured goal belonging to the site. Omitting it
+The typed `goalId` option and source, medium and campaign impact fields require
+`0.1.0-beta.1` or later. The optional `goalId` is used with `include: 'details'`
+and sent as `goal_id`. It selects one configured goal belonging to the site. Omitting it
 leaves the server's union of configured goals unchanged. An unknown goal or use
 with another report variant is rejected by the server as `INVALID_PARAMS`.
 
