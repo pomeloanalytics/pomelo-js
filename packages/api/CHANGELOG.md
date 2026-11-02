@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-beta.2
+
+- Add the product website, documentation links and relevant npm keywords.
+- Clarify server-side setup, the first `me()` call and report examples.
+- Keep the API implementation and generated contract types unchanged.
+
 ## 0.1.0-beta.1
 
 - Sync the reviewed public contract for optional Acquisition `goalId` selection

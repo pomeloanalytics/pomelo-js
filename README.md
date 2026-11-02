@@ -2,22 +2,33 @@
 
 This workspace contains the server-side TypeScript client for the Pomelo Analytics API.
 
-The current [`@pomeloanalytics/api` beta](https://www.npmjs.com/package/@pomeloanalytics/api/v/0.1.0-beta.1)
-is `0.1.0-beta.1`, licensed under MIT.
-It includes the Acquisition goal filter and source/medium/campaign impact types.
-Registry installation, signature and provenance verification, and isolated
-consumer checks passed. The consumer API responses were mocked.
+Read your analytics from a Node.js backend with the MIT-licensed
+[`@pomeloanalytics/api`](packages/api/README.md) beta. It provides typed access
+to sites, reports, goals and usage, including Acquisition goal filters and
+source/medium/campaign impact data when available from the API.
+
+[Website](https://www.pomeloanalytics.com/) ·
+[Getting started](https://docs.pomeloanalytics.com/en/getting-started/) ·
+[Documentation FR](https://docs.pomeloanalytics.com/fr/getting-started/) ·
+[API reference](https://docs.pomeloanalytics.com/en/api-reference/) ·
+[npm](https://www.npmjs.com/package/@pomeloanalytics/api)
 
 ```sh
 npm install @pomeloanalytics/api@beta
 ```
 
-Use the explicit `beta` tag. npm created a `0.0.0-stage` placeholder during
-bootstrap; no SDK version has been promoted to `latest`.
-Registry snapshot on 2026-11-02: `beta` selects `0.1.0-beta.1` and `latest`
-selects `0.0.0-stage`. Recheck the tags before preparing a release.
-Future releases require approval of their exact source and tarball;
-see [release preparation](CONTRIBUTING.md#release-preparation).
+Use the explicit `beta` tag while this package is a prerelease. The registry
+determines which version is distributed; a source checkout may contain an
+unpublished candidate. Check with:
+
+```sh
+npm view @pomeloanalytics/api dist-tags versions --json
+```
+
+`latest` controls installations without a version/tag suffix. Pointing it to an
+approved beta does not make that version stable. Releases require an owner GO
+for the exact source, version, tarball and intended tags; see
+[release preparation](CONTRIBUTING.md#release-preparation).
 
 Node.js 22.13+ on the Node 22 release line and Node.js 24 are supported targets.
 The package uses ESM and the built-in Fetch API. It has no runtime dependencies.

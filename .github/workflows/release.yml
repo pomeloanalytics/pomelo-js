@@ -1,4 +1,4 @@
-name: Stage API beta
+name: Release API beta
 
 on:
   workflow_dispatch:
@@ -15,6 +15,13 @@ on:
         description: Approved tarball SHA256 (64 lowercase hexadecimal characters)
         type: string
         required: true
+      promote_latest:
+        description: Also point latest to this beta (requires explicit owner approval)
+        type: boolean
+        default: false
+      expected_latest:
+        description: Expected previous latest version when promoting (required if promote_latest is true)
+        type: string
 
 permissions:
   contents: read
@@ -27,6 +34,8 @@ env:
   API_VERSION: ${{ inputs.version }}
   SOURCE_SHA: ${{ inputs.source_sha }}
   EXPECTED_SHA256: ${{ inputs.expected_sha256 }}
+  PROMOTE_LATEST: ${{ inputs.promote_latest }}
+  EXPECTED_LATEST: ${{ inputs.expected_latest }}
 
 jobs:
   prepare:
@@ -95,7 +104,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  stage:
+  publish:
     needs: prepare
     if: github.repository == 'pomeloanalytics/pomelo-js' && github.ref == 'refs/heads/main' && github.ref_protected
     runs-on: ubuntu-latest
@@ -109,6 +118,9 @@ jobs:
         with:
           node-version: '24.22.1'
           package-manager-cache: false
+      - name: Use pinned npm with OIDC dist-tag support
+        run: |
+          npm install --global npm@11.21.1 --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org/
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           artifact-ids: ${{ needs.prepare.outputs.artifact_id }}
@@ -117,7 +129,7 @@ jobs:
       - name: Verify downloaded candidate
         run: |
           test "$(node --version)" = 'v24.22.1'
-          test "$(npm --version)" = '11.19.1'
+          test "$(npm --version)" = '11.21.1'
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
@@ -130,12 +142,61 @@ jobs:
           const bytes = readFileSync(`candidate/${filename}`);
           assert.equal(createHash('sha256').update(bytes).digest('hex'), process.env.EXPECTED_SHA256, 'Downloaded checksum mismatch');
           NODE
-      - name: Stage the API beta with OIDC and provenance
+      - name: Publish approved beta and verify registry with OIDC
         run: |
-          npm stage publish "./candidate/pomeloanalytics-api-${API_VERSION}.tgz" --ignore-scripts --tag beta --access public --registry https://registry.npmjs.org/ --provenance --json --loglevel=error > "$RUNNER_TEMP/stage-result.json"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import { createHash } from 'node:crypto';
+          import { writeFileSync } from 'node:fs';
+          const name = '@pomeloanalytics/api';
+          const registry = 'https://registry.npmjs.org/';
+          const metadataUrl = `${registry}@pomeloanalytics%2fapi`;
+          const version = process.env.API_VERSION;
+          const promote = process.env.PROMOTE_LATEST === 'true';
+          const npm = (...args) => execFileSync('npm', [...args, '--registry', registry], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
+          const read = async (url) => {
+            const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
+            assert.ok(response.ok, `Registry read failed: ${response.status}`);
+            return response.json();
+          };
+          const verifyArchive = async (metadata) => {
+            assert.equal(metadata.name, name);
+            assert.equal(metadata.version, version);
+            assert.equal(new URL(metadata.dist.tarball).origin, registry.slice(0, -1));
+            const response = await fetch(metadata.dist.tarball);
+            assert.ok(response.ok, `Registry archive read failed: ${response.status}`);
+            const bytes = Buffer.from(await response.arrayBuffer());
+            assert.equal(createHash('sha256').update(bytes).digest('hex'), process.env.EXPECTED_SHA256, 'Registry archive mismatch');
+            assert.equal(`sha512-${createHash('sha512').update(bytes).digest('base64')}`, metadata.dist.integrity, 'Registry integrity mismatch');
+          };
+          const before = await read(metadataUrl);
+          if (promote) {
+            assert.ok(process.env.EXPECTED_LATEST, 'Explicit previous latest required');
+            assert.ok([process.env.EXPECTED_LATEST, version].includes(before['dist-tags'].latest), 'Latest has changed');
+          }
+          const existing = before.versions?.[version];
+          if (existing) await verifyArchive(existing);
+          else npm('publish', `./candidate/pomeloanalytics-api-${version}.tgz`, '--ignore-scripts', '--tag', 'beta', '--access', 'public', '--provenance', '--json', '--loglevel=error');
+          const published = await read(`${metadataUrl}/${version}`);
+          await verifyArchive(published);
+          const tags = () => JSON.parse(npm('view', name, 'dist-tags', '--json'));
+          const current = tags();
+          assert.equal(current.beta, version, 'Beta tag does not select the approved version');
+          if (promote) {
+            assert.ok([process.env.EXPECTED_LATEST, version].includes(current.latest), 'Latest changed before promotion');
+            if (current.latest !== version) npm('dist-tag', 'add', `${name}@${version}`, 'latest');
+          }
+          const after = tags();
+          assert.equal(after.beta, version);
+          assert.equal(after.latest, promote ? version : before['dist-tags'].latest, 'Unexpected latest tag');
+          const receipt = { name, version, source: process.env.SOURCE_SHA, sha256: process.env.EXPECTED_SHA256, alreadyPublished: Boolean(existing), before: before['dist-tags'], after };
+          writeFileSync(`${process.env.RUNNER_TEMP}/release-result.json`, `${JSON.stringify(receipt, null, 2)}\n`);
+          console.log(JSON.stringify(receipt));
+          NODE
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: api-beta-stage-result-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/stage-result.json
+          name: api-beta-release-result-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-result.json
           if-no-files-found: error
           retention-days: 1
