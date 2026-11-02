@@ -132,7 +132,7 @@ jobs:
           NODE
       - name: Stage the API beta with OIDC and provenance
         run: |
-          npm stage publish "candidate/pomeloanalytics-api-${API_VERSION}.tgz" --ignore-scripts --tag beta --access public --registry https://registry.npmjs.org/ --provenance --json --loglevel=error > "$RUNNER_TEMP/stage-result.json"
+          npm stage publish "./candidate/pomeloanalytics-api-${API_VERSION}.tgz" --ignore-scripts --tag beta --access public --registry https://registry.npmjs.org/ --provenance --json --loglevel=error > "$RUNNER_TEMP/stage-result.json"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: api-beta-stage-result-${{ github.run_attempt }}
