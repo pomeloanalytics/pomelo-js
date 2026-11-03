@@ -1090,6 +1090,11 @@ export interface components {
             }[];
             /** @enum {string} */
             include: "full";
+            /**
+             * @description One measurement method selected from the current period and reused for comparison.
+             * @enum {string}
+             */
+            metric_method?: "legacy" | "web-vitals-6.2.3-cls1";
             pages: {
                 avg_page_eng_time_ms: number;
                 avg_scroll_depth?: number | null;
@@ -1102,6 +1107,11 @@ export interface components {
                 pageviews: number;
                 path_canon: string | null;
                 performance?: {
+                    n_cls?: number;
+                    n_fcp?: number;
+                    n_inp?: number;
+                    n_lcp?: number;
+                    n_ttfb?: number;
                     p75_cls: number | null;
                     p75_fcp?: number | null;
                     p75_inp: number | null;

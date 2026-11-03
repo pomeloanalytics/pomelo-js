@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-beta.3
+
+- Add optional per-metric Content sample counts and the selected measurement method to generated API types.
+- Preserve missing, zero and sparse observations without client-side aggregation or default values.
+- Keep the HTTP client implementation, server-side token boundary and request behavior unchanged.
+
 ## 0.1.0-beta.2
 
 - Add the product website, documentation links and relevant npm keywords.

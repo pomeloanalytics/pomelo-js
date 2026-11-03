@@ -109,6 +109,15 @@ The server owns defaults, period validation, entitlements, and numeric limits;
 the SDK does not choose content depth, clamp limits, or change a requested range.
 The `details` alias for content `include` remains accepted by the public contract.
 
+Full Content responses can include `current.metric_method` and
+`current.pages[].performance.n_lcp`, `n_fcp`, `n_inp`, `n_cls` and `n_ttfb`.
+These optional fields identify the selected measurement method and each metric's
+own observation count. `samples` remains the combined event count; it does not
+establish coverage for every metric. The client preserves missing counts, zero
+counts and null values without recomputing percentiles or filling defaults.
+Browser performance collection is performed by the separate tracking script.
+
+
 Acquisition has three distinct response shapes. The SDK forwards `include`
 unchanged and returns the complete response without renaming one shape into another.
 
