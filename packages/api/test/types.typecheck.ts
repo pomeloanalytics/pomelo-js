@@ -7,6 +7,18 @@ export function checkPublicTypes(client: PomeloClient): void {
   const acquisition: AcquisitionParams = { siteId: 'site-test', include: 'details', goalId: 'goal-test' };
   const actions: ActionsParams = { siteId: 'site-test', include: 'details' };
   void client.reports.actions(actions);
+  void client.reports.content({ siteId: 'site-test', include: 'full' }).then(({ data }) => {
+    const current = data.current;
+    if (current.include === 'full') {
+      const method: 'legacy' | 'web-vitals-6.2.3-cls1' | undefined = current.metric_method;
+      const performance = current.pages[0]?.performance;
+      const counts: (number | undefined)[] = [performance?.n_lcp, performance?.n_fcp, performance?.n_inp, performance?.n_cls, performance?.n_ttfb];
+      // @ts-expect-error response fields keep their wire names.
+      void performance?.nInp;
+      return { method, counts };
+    }
+    return undefined;
+  });
   void client.reports.acquisition(acquisition).then(({ data }) => {
     const current = data.current;
     if ('channels' in current) {

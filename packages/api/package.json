@@ -1,6 +1,6 @@
 {
   "name": "@pomeloanalytics/api",
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.3",
   "description": "TypeScript client for reading Pomelo Analytics reports, sites and goals from Node.js servers.",
   "homepage": "https://www.pomeloanalytics.com/",
   "keywords": ["pomelo", "analytics", "web-analytics", "typescript", "nodejs", "sdk", "api-client"],

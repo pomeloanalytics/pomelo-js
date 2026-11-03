@@ -1249,6 +1249,14 @@
             ],
             "type": "string"
           },
+          "metric_method": {
+            "description": "One measurement method selected from the current period and reused for comparison.",
+            "enum": [
+              "legacy",
+              "web-vitals-6.2.3-cls1"
+            ],
+            "type": "string"
+          },
           "pages": {
             "items": {
               "properties": {
@@ -1288,6 +1296,26 @@
                 "performance": {
                   "nullable": true,
                   "properties": {
+                    "n_cls": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "n_fcp": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "n_inp": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "n_lcp": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "n_ttfb": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
                     "p75_cls": {
                       "nullable": true,
                       "type": "number"

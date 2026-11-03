@@ -121,6 +121,33 @@ test('legacy include alias, boundary limits and encoded filters are sent without
   assert.equal(urls[1]?.searchParams.get('limit'), '500');
 });
 
+test('Content preserves each metric count, method and missing observations without aggregation', async () => {
+  const values = { samples: 81, p75_lcp: 100, p75_fcp: 80, p75_inp: 600, p75_cls: 0.01, p75_ttfb: 50 };
+  const counts = { n_lcp: 20, n_fcp: 20, n_inp: 1, n_cls: 20, n_ttfb: 20 };
+  for (const performance of [
+    { ...values, ...counts },
+    { ...values, ...counts, n_inp: 0, p75_inp: null },
+    { ...values },
+  ]) {
+    const payload = {
+      current: { include: 'full', metric_method: 'web-vitals-6.2.3-cls1', pages: [{ path_canon: '/example', performance }] },
+      compare: null, availability, meta,
+    };
+    const { client, urls } = mock(payload);
+    const { data } = await client.reports.content({ siteId, from, to, include: 'full' });
+    assert.deepEqual(data, payload);
+    assert.equal(urls.length, 1);
+    assert.equal(urls[0]?.searchParams.get('include'), 'full');
+    assert.equal(data.current.include, 'full');
+    if (data.current.include === 'full') {
+      assert.equal(data.current.metric_method, 'web-vitals-6.2.3-cls1');
+      const received = data.current.pages[0]?.performance;
+      assert.equal(Object.hasOwn(received!, 'n_inp'), Object.hasOwn(performance, 'n_inp'));
+      assert.equal(received?.samples, 81);
+    }
+  }
+});
+
 for (const [status, code] of [[401, 'UNAUTHORIZED'], [402, 'HARD_CAP_REACHED'], [403, 'FORBIDDEN'], [409, 'REPORT_NOT_AVAILABLE_FOR_REQUESTED_PERIOD'], [422, 'RETENTION_EXCEEDED'], [429, 'RATE_LIMITED'], [500, 'NEW_SERVER_ERROR'], [503, 'ANALYTICS_UNAVAILABLE']] as const) {
   test(`facade exposes HTTP ${status} without fallback or extra requests`, async () => {
     const details = { availability, usage: meta.usage };
