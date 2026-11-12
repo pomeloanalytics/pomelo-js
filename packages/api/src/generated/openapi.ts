@@ -180,6 +180,7 @@ export interface paths {
                     /**
                      * @description Grouping dimension for breakdown endpoint.
                      *     When `dimension=tenant`, rows are grouped by stable `tenant_id`. The
+                     *     statistics of a tenant are those of the page's client space. The
                      *     response also includes `tenant_slug` and `tenant_name` as display labels.
                      */
                     dimension?: components["parameters"]["BreakdownDimension"];
@@ -333,22 +334,31 @@ export interface paths {
         };
         /**
          * Acquisition channels, referrers, and landing pages
-         * @description Mixed route family. The strict-safe slice exposes channels, host-only
-         *     referrers, and landing pages. Attribution slices such as sources,
-         *     mediums, and campaigns remain profile-gated. Read
-         *     `availability.readModel` for the route split, then inspect
-         *     `availability.sections` as `acquisition_attribution`.
+         * @description Referring domains and landing pages of the visits. A direct visit has
+         *     no referring domain. Channels, sources, mediums, campaigns and impact by
+         *     source belong to the Campagnes option: `by_channel`, `channels`,
+         *     `channel_timeseries`, `top_sources`, `top_mediums`, `top_campaigns` and
+         *     the `dimensions` and `impact` source lists are computed on visits whose
+         *     visitor gave consent, with the usual reporting precision (rounded
+         *     counts, `< 10`, rows under 10 visits grouped, rates and means `null`
+         *     under 10 contributors), and are empty when the site does not have the
+         *     option. `availability.sections` reports `acquisition_attribution` with
+         *     the status of the report when the option is on and with the reason
+         *     `campaigns_option_required` when it is off. `avg_pages_per_session`,
+         *     `avg_session_eng_time_ms` and `avg_page_eng_time_ms` are `null` when
+         *     fewer than ten visits contribute; they are never published as `0` in
+         *     that case.
          *     When report include selection is enabled, `include` selects the response
          *     depth and omission selects `summary`. Otherwise, `include` is ignored
          *     and the handler uses `full`.
-         *     `include=summary` returns `current.channels`, coverage and mix timeseries.
-         *     `full` returns `current.by_channel` and top lists. `details` returns
+         *     `include=summary` returns totals, coverage and the sessions timeseries.
+         *     `full` returns `current.by_day` and top lists. `details` returns
          *     dimensions, landing pages and optional goal impact; it is a distinct
          *     Acquisition variant, not the Content alias for full.
          *     `goal_id` optionally selects one configured site goal for `details`
-         *     impact. Impact reports distinct converted visits and rates by channel,
-         *     landing page, source, medium and campaign using first-pageview
-         *     attribution; omission uses the union of the site's configured goals.
+         *     impact. Impact reports distinct converted visits and rates by landing
+         *     page using first-pageview attribution; omission uses the union of the
+         *     site's configured goals.
          */
         get: {
             parameters: {
@@ -390,11 +400,9 @@ export interface paths {
             requestBody?: never;
             responses: {
                 /**
-                 * @description OK. Mixed route: the strict-safe acquisition slice succeeded.
-                 *     `availability.readModel` shows what belongs to the strict-safe
-                 *     baseline, while `availability.sections` reports whether
-                 *     `acquisition_attribution` remains locked or only partially
-                 *     compatible for the requested period.
+                 * @description OK. `availability.sections` reports whether
+                 *     `acquisition_attribution` (Campagnes option) is available for the
+                 *     requested period.
                  */
                 200: {
                     headers: {
@@ -432,13 +440,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Simple action report with advanced families gated by profile
-         * @description Mixed route family. The strict-safe slice covers bounded simple actions
-         *     (`ui.click`, `outbound.click`, `file.download`, `form.submit`). Richer
-         *     families such as goals, errors, and custom events remain profile-gated
-         *     and are marked through `availability.sections` as `actions_advanced`.
-         *     Use `availability.readModel` to distinguish the stable baseline from
-         *     the enriched families unlocked by `Extended`.
+         * Actions by family
+         * @description Goals, forms, outbound links, downloads, errors, custom events and
+         *     instrumentation, by family.
          *     When report include selection is enabled, `include` selects the response
          *     depth and omission selects `summary`. Otherwise, `include` is ignored
          *     and the handler uses `full`.
@@ -482,13 +486,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /**
-                 * @description OK. Mixed route: the strict-safe bounded action slice succeeded.
-                 *     `availability.readModel` shows what belongs to the strict-safe
-                 *     baseline, while `availability.sections` reports whether
-                 *     `actions_advanced` remains locked or only partially compatible
-                 *     for the requested period.
-                 */
+                /** @description OK */
                 200: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["XRateLimitLimit"];
@@ -609,11 +607,12 @@ export interface paths {
         };
         /**
          * Consolidated site overview
-         * @description Mixed route family. In `Strict`, the response still includes the
-         *     strict-safe overview baseline plus an acquisition-lite preview built
-         *     from channels, host-only referrers, and landing pages. Read
-         *     `availability.readModel` for the baseline split, then inspect
-         *     `availability.sections` for enriched slices that remain locked.
+         * @description Audience, content and acquisition of the site over the requested
+         *     period. `avg_pages_per_session`, `avg_session_eng_time_ms` and
+         *     `avg_page_eng_time_ms` are `null` when fewer than ten visits
+         *     contribute; they are never published as `0` in that case. Channels belong to the Campagnes
+         *     option: `acquisition.by_channel` holds visits with consent and is empty
+         *     without the option.
          */
         get: {
             parameters: {
@@ -645,11 +644,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /**
-                 * @description OK. Mixed route: the strict-safe overview slice succeeded. Inspect
-                 *     `availability.sections` for enriched or geo-detail sections that
-                 *     remain locked or only partially compatible.
-                 */
+                /** @description OK */
                 200: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["XRateLimitLimit"];
@@ -878,13 +873,15 @@ export interface components {
             channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
             sessions: number;
         };
+        /**
+         * @description Visits with and without a referring domain. A direct visit has no
+         *     referring domain.
+         */
         AcquisitionCoverage: {
             direct_sessions: number;
-            direct_share: number;
+            direct_share: number | null;
             non_direct_sessions: number;
-            non_direct_share: number;
-            tagged_sessions: number;
-            tagged_share: number;
+            non_direct_share: number | null;
         };
         AcquisitionDetailsReportResponse: components["schemas"]["UserApiAcquisitionReportMeta"] & {
             compare: components["schemas"]["UserApiAcquisitionDetailsCurrent"] | null;
@@ -892,67 +889,68 @@ export interface components {
         };
         AcquisitionDimensionImpactItem: {
             converted_sessions: number;
-            session_conversion_rate: number;
+            session_conversion_rate: number | null;
             value: string;
         };
         AcquisitionDimensionItem: components["schemas"]["AcquisitionSummaryTotals"] & {
             favicon_url?: string | null;
-            share: number;
+            share: number | null;
             value: string;
         };
         AcquisitionFullReportResponse: components["schemas"]["UserApiAcquisitionEnvelope"] & {
             meta: components["schemas"]["MeteredMeta"];
         };
         /**
-         * @description Extended-only goal impact. Each dimension comes from the visit's
+         * @description Goal impact by landing page. The landing page comes from the visit's
          *     canonical first pageview in the requested scope. A converted visit
-         *     matches at least one selected goal through an eligible Extended event;
-         *     repeated matches count once. Rates divide converted visits by eligible
-         *     Extended visits in the same dimension, period and traffic scope.
+         *     matches at least one selected goal; repeated matches count once. Rates
+         *     divide converted visits by visits in the same landing page, period and
+         *     traffic scope. `channels`, `sources`, `mediums` and `campaigns` belong
+         *     to the Campagnes option: they are computed on visits whose visitor gave
+         *     consent and are empty without the option.
          */
         AcquisitionImpact: {
             campaigns: components["schemas"]["AcquisitionDimensionImpactItem"][];
+            /** @description Computed on visits with consent (Campagnes option); empty without the option. */
             channels: {
                 /** @enum {string} */
                 channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
                 converted_sessions: number;
-                session_conversion_rate: number;
+                session_conversion_rate: number | null;
             }[];
             landing_pages: {
                 converted_sessions: number;
                 path_canon: string | null;
-                session_conversion_rate: number;
+                session_conversion_rate: number | null;
             }[];
             mediums: components["schemas"]["AcquisitionDimensionImpactItem"][];
+            /** @description Computed on visits with consent (Campagnes option); empty without the option. */
             sources: components["schemas"]["AcquisitionDimensionImpactItem"][];
         };
         AcquisitionLandingPageSummaryItem: components["schemas"]["AcquisitionSummaryTotals"] & {
             page_title?: string | null;
             path_canon: string | null;
-            /** @enum {string} */
-            primary_channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
-            share: number;
+            share: number | null;
         };
         /** @description Source response variants selected by the effective Acquisition include mode. Current and comparison use the same shape; availability and metering remain present in every variant. */
         AcquisitionReportResponse: components["schemas"]["AcquisitionFullReportResponse"] | components["schemas"]["AcquisitionSummaryReportResponse"] | components["schemas"]["AcquisitionDetailsReportResponse"];
         AcquisitionSummaryChannelItem: components["schemas"]["AcquisitionChannelItem"] & components["schemas"]["AcquisitionSummaryTotals"] & {
-            share: number;
+            share: number | null;
         };
         AcquisitionSummaryReportResponse: components["schemas"]["UserApiAcquisitionReportMeta"] & {
             compare: components["schemas"]["UserApiAcquisitionSummaryCurrent"] | null;
             current: components["schemas"]["UserApiAcquisitionSummaryCurrent"];
         };
         AcquisitionSummaryTotals: {
-            avg_pages_per_session: number;
-            avg_session_eng_time_ms: number;
-            engagement_rate: number;
+            avg_pages_per_session: number | null;
+            avg_session_eng_time_ms: number | null;
+            engagement_rate: number | null;
             sessions: number;
         };
         ActionsCurrent: {
             /**
-             * @description Exact action rows for the active envelope. On Strict sites, this
-             *     list is limited to bounded simple actions and stays readable in
-             *     HTTP `200`; advanced families remain section-gated.
+             * @description Action rows of the active family, or of every family when none is
+             *     selected.
              */
             actions: {
                 /** @description Stable element/action identifier when the action row can be narrowed by it. */
@@ -970,17 +968,13 @@ export interface components {
                 form_id?: string | null;
                 occurrences: number;
                 sessions: number;
+                /** @description Derived from the published rounded counts only; it reveals nothing finer than them. */
+                share?: number | null;
                 top_page?: string | null;
-                /** @enum {string|null} */
-                top_source?: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other" | null;
             }[];
             /** @enum {string|null} */
             active_family: "goals" | "forms" | "outbound" | "downloads" | "errors" | "custom" | "instrumentation" | null;
-            /**
-             * @description Shared breakdown context for the active action envelope. Advanced
-             *     action families can remain unavailable even when the route itself
-             *     succeeds; inspect `availability.sections`.
-             */
+            /** @description Pages and segments around the active family or action. */
             context: {
                 pages: {
                     path_canon?: string | null;
@@ -996,18 +990,10 @@ export interface components {
                     scope: "family" | "action";
                     sessions: number;
                 }[];
-                sources: {
-                    /** @enum {string} */
-                    channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
-                    /** @enum {string} */
-                    scope: "family" | "action";
-                    sessions: number;
-                }[];
             };
             /**
-             * @description Family summary for the current action envelope. On Strict sites,
-             *     simple bounded families remain available; richer families are
-             *     exposed through `availability.sections` as `actions_advanced`.
+             * @description Summary of each action family: goals, forms, outbound, downloads,
+             *     errors, custom and instrumentation.
              */
             families: {
                 /** @enum {string} */
@@ -1077,13 +1063,13 @@ export interface components {
         };
         ContentFullCurrent: {
             entries?: {
-                bounce_rate: number;
+                bounce_rate: number | null;
                 entries: number;
                 page_title?: string | null;
                 path_canon: string | null;
             }[];
             exits?: {
-                exit_rate: number;
+                exit_rate: number | null;
                 exits: number;
                 page_title?: string | null;
                 path_canon: string | null;
@@ -1096,13 +1082,13 @@ export interface components {
              */
             metric_method?: "legacy" | "web-vitals-6.2.3-cls1";
             pages: {
-                avg_page_eng_time_ms: number;
+                avg_page_eng_time_ms: number | null;
                 avg_scroll_depth?: number | null;
                 bounces: number;
                 entries: number;
-                exit_rate: number;
+                exit_rate: number | null;
                 exits: number;
-                page_bounce_rate: number;
+                page_bounce_rate: number | null;
                 page_title?: string | null;
                 pageviews: number;
                 path_canon: string | null;
@@ -1119,6 +1105,8 @@ export interface components {
                     p75_ttfb: number | null;
                     samples: number;
                 } | null;
+                /** @description Derived from the published rounded counts only; it reveals nothing finer than them. */
+                share?: number | null;
                 unique_pageviews: number;
             }[];
             timeseries: {
@@ -1126,6 +1114,9 @@ export interface components {
                 date: string;
                 pageviews: number;
                 path_canon: string;
+                /** @description Visible page paths only (not `(other)`). Derived from the published rounded counts only; it reveals nothing finer than them. */
+                share?: number | null;
+                total_pageviews?: number;
             }[];
             totals: components["schemas"]["ContentTotals"];
         };
@@ -1142,8 +1133,10 @@ export interface components {
             include: "summary";
             /**
              * @description Dense, strictly increasing UTC daily series. It contains exactly
-             *     one point per requested day, including zero-valued empty days, and
-             *     its pageview sum equals `totals.pageviews`.
+             *     one point per requested day, including zero-valued empty days. The
+             *     exact daily pageviews add up to the exact period total, but each
+             *     point and `totals.pageviews` are rounded independently: the sum of
+             *     the returned points can differ from `totals.pageviews`.
              */
             timeseries: {
                 /** Format: date */
@@ -1156,35 +1149,16 @@ export interface components {
             meta: components["schemas"]["MeteredMeta"];
         };
         ContentTotals: {
-            avg_page_eng_time_ms: number;
-            bounce_rate: number;
+            avg_page_eng_time_ms: number | null;
+            bounce_rate: number | null;
             entries: number;
-            exit_rate: number;
+            exit_rate: number | null;
             pageviews: number;
             unique_pageviews: number;
         };
-        DerivedProductCapability: {
-            /** @enum {string} */
-            data_envelope: "strict" | "extended" | "mixed";
-            /** @enum {string} */
-            level: "none" | "limited" | "standard" | "guardrailed" | "advanced" | "custom";
-            /** @enum {string} */
-            maturity: "implemented" | "partially_implemented" | "not_explicitly_split" | "not_applicable";
-            notes: string[];
-        };
-        EffectiveProductCapabilities: {
-            acquisition: components["schemas"]["DerivedProductCapability"];
-            advanced_actions: components["schemas"]["DerivedProductCapability"];
-            api: components["schemas"]["DerivedProductCapability"];
-            collection: components["schemas"]["DerivedProductCapability"];
-            dashboard_surfaces: string[];
-            exports: components["schemas"]["DerivedProductCapability"];
-            multi_tenant: components["schemas"]["DerivedProductCapability"];
-            reports: components["schemas"]["DerivedProductCapability"];
-        };
         ErrorBody: {
             /** @enum {string} */
-            code: "UNAUTHORIZED" | "FORBIDDEN" | "INVALID_METHOD" | "INVALID_PARAMS" | "RETENTION_EXCEEDED" | "RATE_LIMITED" | "HARD_CAP_REACHED" | "REPORT_LOCKED_BY_PROFILE" | "REPORT_NOT_AVAILABLE_FOR_REQUESTED_PERIOD" | "REPORT_RESPONSE_TOO_LARGE" | "INTERNAL_ERROR" | "NOT_FOUND";
+            code: "UNAUTHORIZED" | "FORBIDDEN" | "INVALID_METHOD" | "INVALID_PARAMS" | "RETENTION_EXCEEDED" | "RATE_LIMITED" | "HARD_CAP_REACHED" | "REPORT_NOT_AVAILABLE_FOR_REQUESTED_PERIOD" | "REPORT_RESPONSE_TOO_LARGE" | "INTERNAL_ERROR" | "NOT_FOUND";
             details?: {
                 [key: string]: unknown;
             } | null;
@@ -1213,11 +1187,22 @@ export interface components {
         GoalListResponse: {
             items: components["schemas"]["Goal"][];
         };
+        /**
+         * @description Goals whose selected population is below the reporting minimum or
+         *     whose converted-session cohort is below the per-cell minimum are
+         *     omitted. Consumers must not infer zero when a configured goal is absent.
+         */
         GoalsConversionsCurrent: {
             goals: {
                 conversions: number;
                 goal_id: string;
                 last_seen_at: string | null;
+                /**
+                 * @description Always `available` for returned goal rows. Suppressed goals
+                 *     are omitted rather than returned with zero.
+                 * @enum {string}
+                 */
+                reporting_status?: "available" | "suppressed_small_group" | "insufficient_population";
                 total_sessions: number;
                 unique_sessions: number;
             }[];
@@ -1227,6 +1212,7 @@ export interface components {
             compare: components["schemas"]["GoalsConversionsCurrent"] | null;
             current: components["schemas"]["GoalsConversionsCurrent"];
             range: components["schemas"]["Range"];
+            small_site?: components["schemas"]["SmallSiteBasis"] | null;
         };
         GoalsConversionsResponse: components["schemas"]["GoalsConversionsEnvelope"] & {
             meta: components["schemas"]["MeteredMeta"];
@@ -1261,10 +1247,12 @@ export interface components {
         };
         OverviewCurrent: {
             acquisition: {
+                /**
+                 * @description Visits with consent by channel (Campagnes option); empty
+                 *     without the option.
+                 */
                 by_channel: components["schemas"]["AcquisitionChannelItem"][];
                 top_landing_pages: {
-                    /** @enum {string} */
-                    channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
                     page_title?: string | null;
                     path_canon: string | null;
                     sessions: number;
@@ -1276,20 +1264,13 @@ export interface components {
                     browser_family: string;
                     sessions: number;
                 }[];
-                /**
-                 * @description Mixed overview audience slice. When unavailable, inspect
-                 *     `availability.sections` for `overview_cities`.
-                 */
-                cities: {
-                    city: string;
-                    country: string;
-                    sessions: number;
-                }[];
                 countries: {
                     country: string;
                     sessions: number;
                 }[];
                 devices: {
+                    avg_pages_per_session?: number | null;
+                    avg_session_eng_time_ms?: number | null;
                     device_type: string;
                     sessions: number;
                 }[];
@@ -1297,10 +1278,6 @@ export interface components {
                     os_family: string;
                     sessions: number;
                 }[];
-                /**
-                 * @description Mixed overview audience slice. When unavailable, inspect
-                 *     `availability.sections` for `overview_regions`.
-                 */
                 regions: {
                     country: string;
                     region: string;
@@ -1323,22 +1300,22 @@ export interface components {
             };
             overview: {
                 timeseries: {
-                    avg_page_eng_time_ms: number;
-                    avg_session_eng_time_ms: number;
-                    bounce_rate: number;
+                    avg_page_eng_time_ms: number | null;
+                    avg_session_eng_time_ms: number | null;
+                    bounce_rate: number | null;
                     /** Format: date */
                     date: string;
-                    engagement_rate: number;
+                    engagement_rate: number | null;
                     pageviews: number;
                     sessions: number;
                     visitors: number;
                 }[];
                 totals: {
-                    avg_page_eng_time_ms: number;
-                    avg_pages_per_session: number;
-                    avg_session_eng_time_ms: number;
-                    bounce_rate: number;
-                    engagement_rate: number;
+                    avg_page_eng_time_ms: number | null;
+                    avg_pages_per_session: number | null;
+                    avg_session_eng_time_ms: number | null;
+                    bounce_rate: number | null;
+                    engagement_rate: number | null;
                     pageviews: number;
                     sessions: number;
                     visitors: number;
@@ -1368,17 +1345,9 @@ export interface components {
             usage_history_months: number;
         };
         ProductDashboard: {
-            /** @enum {string} */
-            breakdowns_high_cardinality_level: "none" | "limited" | "standard" | "guardrailed" | "advanced" | "custom";
-            /** @enum {string} */
-            breakdowns_standard_level: "none" | "limited" | "standard" | "guardrailed" | "advanced" | "custom";
-            /** @enum {string} */
-            essential_level: "none" | "limited" | "standard" | "guardrailed" | "advanced" | "custom";
             hourly_enabled: boolean;
             /** @enum {string} */
             hourly_level: "none" | "limited" | "standard" | "guardrailed" | "advanced" | "custom";
-            /** @enum {string} */
-            standard_level: "none" | "limited" | "standard" | "guardrailed" | "advanced" | "custom";
             /** @enum {string} */
             team_management_level: "none" | "limited" | "standard" | "guardrailed" | "advanced" | "custom";
         };
@@ -1419,58 +1388,31 @@ export interface components {
             start: string;
         };
         /**
-         * @description Availability contract for profile-aware reads.
-         *
-         *     For `mixed` routes, HTTP `200` means the strict-safe base slice was
-         *     returned successfully. `readModel` tells you which slices belong to
-         *     the strict-safe baseline and which belong to `Extended`.
-         *     Section-level locks or partial compatibility for enriched sub-slices
-         *     are reported in `sections`.
+         * @description Availability of a report for the requested period and its comparison
+         *     period. `sections` lists the parts of the report that belong to the
+         *     Campagnes option; each one is reported with the reason
+         *     `campaigns_option_required` while the option is off.
          */
         ReportAvailability: {
-            classification: components["schemas"]["ReportAvailabilityClassification"];
-            /** Format: date-time */
-            collectionProfileEffectiveAt: string | null;
             compare: components["schemas"]["ReportPeriodAvailability"] | null;
-            /**
-             * @description Route-level availability for the current range. On `mixed` routes,
-             *     `status=available` means the strict-safe base slice is readable;
-             *     inspect `sections` for enriched sub-slices that remain locked or
-             *     partial.
-             */
             current: components["schemas"]["ReportPeriodAvailability"];
-            /** @enum {string} */
-            currentProfile: "strict" | "extended";
-            readModel?: components["schemas"]["ReportAvailabilityReadModel"] | null;
             route: components["schemas"]["ReportAvailabilityRouteId"];
-            /**
-             * @description Section-level availability for mixed routes. Each entry describes
-             *     an enriched sub-slice that may remain locked or partially
-             *     compatible while the enclosing route still returns HTTP `200`.
-             */
             sections: components["schemas"]["ReportSectionAvailability"][];
         };
-        /** @enum {string} */
-        ReportAvailabilityClassification: "strict_safe" | "extended_only" | "mixed";
         /**
-         * @description Explicit read-model for mixed routes. `strictSafe` lists the baseline
-         *     slices that remain available in `Strict`; `extended` lists the
-         *     enriched slices unlocked by `Extended`.
+         * @description - `campaigns_option_required`: the data belongs to the Campagnes
+         *       option, which is not enabled on the site.
+         *     - `outside_source_coverage`: the requested period is not covered by
+         *       collected data.
+         * @enum {string|null}
          */
-        ReportAvailabilityReadModel: {
-            extended: components["schemas"]["ReportAvailabilityReadModelSliceId"][];
-            strictSafe: components["schemas"]["ReportAvailabilityReadModelSliceId"][];
-        };
-        /** @description Opaque identifier for a data slice within an availability result. */
-        ReportAvailabilityReadModelSliceId: string;
-        /** @enum {string|null} */
-        ReportAvailabilityReason: "strict_safe_route" | "extended_data_required" | "requested_period_has_no_extended_data" | "requested_period_crosses_profile_change" | "outside_source_coverage" | "section_not_collected_in_runtime" | null;
+        ReportAvailabilityReason: "campaigns_option_required" | "outside_source_coverage" | null;
         /** @description Opaque identifier for the route associated with this availability result. */
         ReportAvailabilityRouteId: string;
         /** @description Opaque identifier for a section within an availability result. */
         ReportAvailabilitySectionId: string;
         /** @enum {string} */
-        ReportAvailabilityStatus: "available" | "locked_by_profile" | "partially_available_after_effective_at" | "partially_available_outside_source_coverage" | "not_available_for_requested_period";
+        ReportAvailabilityStatus: "available" | "partially_available_outside_source_coverage" | "not_available_for_requested_period";
         ReportPeriodAvailability: {
             /** Format: date-time */
             compatibleEnd: string | null;
@@ -1484,12 +1426,11 @@ export interface components {
             status: components["schemas"]["ReportAvailabilityStatus"];
         };
         /**
-         * @description Section-level availability for mixed routes. A mixed route can return
-         *     HTTP `200` while one or more enriched sections remain locked or only
-         *     partially compatible for the requested period.
+         * @description Availability of a report section that belongs to the Campagnes option.
+         *     The report itself is returned with HTTP `200`; the section is empty
+         *     when the site does not have the option.
          */
         ReportSectionAvailability: {
-            classification: components["schemas"]["ReportAvailabilityClassification"];
             compare: components["schemas"]["ReportPeriodAvailability"] | null;
             current: components["schemas"]["ReportPeriodAvailability"];
             id: components["schemas"]["ReportAvailabilitySectionId"];
@@ -1511,26 +1452,35 @@ export interface components {
         };
         SiteProductConfiguration: {
             api: components["schemas"]["ProductApi"];
-            capabilities: components["schemas"]["EffectiveProductCapabilities"];
-            /** @enum {string} */
-            collection_profile: "strict" | "extended";
-            /**
-             * Format: date-time
-             * @description Timestamp from which the current site profile applies to future collection. This is prospective only and does not backfill older events.
-             */
-            collection_profile_effective_at: string | null;
-            dashboard: components["schemas"]["SiteProductDashboard"];
+            /** @description Campagnes option of the site: marketing reports (channels, sources, mediums, campaigns) computed on visits whose visitor gave consent. Off by default; the owner or an admin of the workspace sets it, on every plan. */
+            campaigns_enabled: boolean;
+            dashboard: components["schemas"]["ProductDashboard"];
             exports: components["schemas"]["ProductExports"];
             product_retention: components["schemas"]["ProductRetention"];
             /** @enum {string} */
             runtime_plan_id: "free" | "starter" | "pro";
             technical_retention: components["schemas"]["TechnicalRetention"];
         };
-        SiteProductDashboard: components["schemas"]["ProductDashboard"] & {
-            enabled_surfaces: string[];
-        };
         SitesResponse: {
             items: components["schemas"]["SiteItem"][];
+        };
+        /**
+         * @description Small-site rule. A rate, a mean or a percentile needs ten contributors;
+         *     below, it is `null` in `current`. When the requested period has fewer,
+         *     these are the same totals over the shortest calendar period (ISO week,
+         *     month, quarter, year) that contains it and counts ten contributors.
+         *     Absent or `null` when no such period exists.
+         */
+        SmallSiteBasis: {
+            period: {
+                /** Format: date-time */
+                end: string;
+                /** Format: date-time */
+                start: string;
+            };
+            totals: {
+                [key: string]: number | null;
+            };
         };
         /** @description Compare window metadata for report and metrics surfaces. */
         SurfaceCompareWindow: {
@@ -1556,20 +1506,31 @@ export interface components {
         SurfaceExportCapability: {
             csv: boolean;
             /** @enum {string} */
-            dataEnvelope: "strict" | "extended" | "mixed";
-            /** @enum {string} */
             level: "none" | "limited" | "standard" | "guardrailed" | "advanced" | "custom";
             notes?: string[];
         };
-        /** @description Additive launch-readiness metadata for reports and metrics. */
+        /** @description Additive metadata for reports and metrics. */
         SurfaceMeta: {
             compareWindow: components["schemas"]["SurfaceCompareWindow"];
-            /** @enum {string} */
-            dataEnvelope: "strict" | "extended" | "mixed";
             dataFreshness: components["schemas"]["SurfaceDataFreshness"];
             exportCapability: components["schemas"]["SurfaceExportCapability"];
-            /** @enum {string} */
-            mode: "strict" | "extended";
+            /** @description Analytics counts are exact from 10. Numeric 5 represents measured activity in the inclusive interval 1..9 and MUST be rendered as less than 10, never as five measured visits. Zero means a measured empty count. Detail rows under 10 visits are not published. The interval representative is not additive: use canonical period and daily totals, not sums of bins. Rates are published to the percent; 0.005 and 0.995 represent the open tails below 1% and above 99%. Rates, means, durations and percentiles are null under 10 contributors. Last conversion dates have day precision. Usage metering, billing, limits and diagnostics remain exact. This policy reduces detail; it is not a guarantee of anonymity. */
+            reportingPrecision?: {
+                /** @enum {integer} */
+                countStep: 1;
+                /** @enum {number} */
+                rateStep: 0.01;
+                smallPositiveCount: {
+                    /** @enum {integer} */
+                    lower: 1;
+                    /** @enum {integer} */
+                    representative: 5;
+                    /** @enum {integer} */
+                    upper: 9;
+                };
+                /** @enum {string} */
+                version: "exact-counts-v1";
+            };
         };
         TechnicalRetention: {
             site_data_retention_months: number;
@@ -1597,8 +1558,6 @@ export interface components {
             points: components["schemas"]["TimeseriesPoint"][];
         };
         TopReferrer: {
-            /** @enum {string} */
-            channel?: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
             domain: string;
             favicon_url?: string | null;
             sessions: number;
@@ -1633,58 +1592,73 @@ export interface components {
             used_units: number;
         };
         UserApiAcquisitionCurrent: {
+            /**
+             * @description Visits with consent by channel (Campagnes option, section
+             *     `acquisition_attribution`); empty without the option.
+             */
             by_channel: components["schemas"]["AcquisitionChannelItem"][];
             by_day: {
-                /** @enum {string} */
-                channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
                 /** Format: date */
                 date: string;
                 sessions: number;
             }[];
+            /** @description Campagnes option of the site. When `false`, the Campagnes sections are empty. */
+            campaigns_enabled: boolean;
+            /** @description Visits with Campagnes consent in the period, rounded like the other counts. `0` when the option is off. */
+            consented_sessions: number;
             /**
-             * @description Mixed acquisition section `acquisition_attribution`. May be empty
-             *     when the route returns only the strict-safe slice in HTTP `200`.
+             * @description Visits with consent by campaign (Campagnes option, section
+             *     `acquisition_attribution`); empty without the option.
              */
             top_campaigns: {
                 campaign: string;
                 sessions: number;
             }[];
-            /** @description Strict-safe acquisition-lite slice available in both Strict and Extended. */
+            /** @description Landing pages of the visits. */
             top_landing_pages: {
-                /** @enum {string} */
-                channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
                 page_title?: string | null;
                 path_canon: string | null;
                 sessions: number;
             }[];
             /**
-             * @description Mixed acquisition section `acquisition_attribution`. May be empty
-             *     when the route returns only the strict-safe slice in HTTP `200`.
+             * @description Visits with consent by medium (Campagnes option, section
+             *     `acquisition_attribution`); empty without the option.
              */
             top_mediums: {
                 medium: string;
                 sessions: number;
             }[];
-            /** @description Strict-safe host-only referral slice available in both Strict and Extended. */
+            /** @description Referring domains of the visits. */
             top_referrers: components["schemas"]["TopReferrer"][];
             /**
-             * @description Mixed acquisition section `acquisition_attribution`. May be empty
-             *     when the route returns only the strict-safe slice in HTTP `200`.
+             * @description Visits with consent by source (Campagnes option, section
+             *     `acquisition_attribution`); empty without the option.
              */
             top_sources: components["schemas"]["TopSource"][];
             totals: {
-                avg_session_eng_time_ms: number;
-                engagement_rate: number;
+                avg_session_eng_time_ms: number | null;
+                engagement_rate: number | null;
                 pageviews: number;
                 sessions: number;
             };
         };
         UserApiAcquisitionDetailsCurrent: {
+            /** @description Campagnes option of the site. When `false`, the Campagnes sections are empty. */
+            campaigns_enabled: boolean;
+            /** @description Visits with Campagnes consent in the period, rounded like the other counts. `0` when the option is off. */
+            consented_sessions: number;
             dimensions: {
+                /** @description Computed on visits with consent (Campagnes option); empty without the option. */
                 campaigns: components["schemas"]["AcquisitionDimensionItem"][];
+                /** @description Computed on visits with consent (Campagnes option); empty without the option. */
+                contents: components["schemas"]["AcquisitionDimensionItem"][];
+                /** @description Computed on visits with consent (Campagnes option); empty without the option. */
                 mediums: components["schemas"]["AcquisitionDimensionItem"][];
                 referrers: components["schemas"]["AcquisitionDimensionItem"][];
+                /** @description Computed on visits with consent (Campagnes option); empty without the option. */
                 sources: components["schemas"]["AcquisitionDimensionItem"][];
+                /** @description Computed on visits with consent (Campagnes option); empty without the option. */
+                terms: components["schemas"]["AcquisitionDimensionItem"][];
             };
             goals_configured: boolean;
             impact?: components["schemas"]["AcquisitionImpact"] | null;
@@ -1695,6 +1669,7 @@ export interface components {
             compare: components["schemas"]["UserApiAcquisitionCurrent"] | null;
             current: components["schemas"]["UserApiAcquisitionCurrent"];
             range: components["schemas"]["Range"];
+            small_site?: components["schemas"]["SmallSiteBasis"] | null;
         };
         UserApiAcquisitionReportMeta: {
             availability: components["schemas"]["ReportAvailability"];
@@ -1702,12 +1677,29 @@ export interface components {
             range: components["schemas"]["Range"];
         };
         UserApiAcquisitionSummaryCurrent: {
+            /** @description Campagnes option of the site. When `false`, the Campagnes sections are empty. */
+            campaigns_enabled: boolean;
+            /**
+             * @description Visits with consent by channel and day (Campagnes option); empty
+             *     without the option.
+             */
+            channel_timeseries: {
+                /** @enum {string} */
+                channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
+                /** Format: date */
+                date: string;
+                sessions: number;
+            }[];
+            /**
+             * @description Visits with consent by channel (Campagnes option, section
+             *     `acquisition_attribution`); empty without the option.
+             */
             channels: components["schemas"]["AcquisitionSummaryChannelItem"][];
+            /** @description Visits with Campagnes consent in the period, rounded like the other counts. `0` when the option is off. */
+            consented_sessions: number;
             coverage: components["schemas"]["AcquisitionCoverage"];
             goals_configured: boolean;
             mix_timeseries: {
-                /** @enum {string} */
-                channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
                 /** Format: date */
                 date: string;
                 sessions: number;
@@ -1719,18 +1711,21 @@ export interface components {
             compare: components["schemas"]["ActionsCurrent"] | null;
             current: components["schemas"]["ActionsCurrent"];
             range: components["schemas"]["Range"];
+            small_site?: components["schemas"]["SmallSiteBasis"] | null;
         };
         UserApiContentFullEnvelope: {
             availability: components["schemas"]["ReportAvailability"];
             compare: components["schemas"]["ContentFullCurrent"] | null;
             current: components["schemas"]["ContentFullCurrent"];
             range: components["schemas"]["Range"];
+            small_site?: components["schemas"]["SmallSiteBasis"] | null;
         };
         UserApiContentSummaryEnvelope: {
             availability: components["schemas"]["ReportAvailability"];
             compare: components["schemas"]["ContentSummaryCurrent"] | null;
             current: components["schemas"]["ContentSummaryCurrent"];
             range: components["schemas"]["Range"];
+            small_site?: components["schemas"]["SmallSiteBasis"] | null;
         };
         UserApiGoalFilters: {
             action_id?: string;
@@ -1751,13 +1746,11 @@ export interface components {
             compare: components["schemas"]["OverviewCurrent"] | null;
             current: components["schemas"]["OverviewCurrent"];
             range: components["schemas"]["Range"];
+            small_site?: components["schemas"]["SmallSiteBasis"] | null;
         };
         WorkspaceProductConfiguration: {
             api: components["schemas"]["ProductApi"];
-            capabilities: components["schemas"]["EffectiveProductCapabilities"];
             dashboard: components["schemas"]["ProductDashboard"];
-            /** @enum {string} */
-            default_collection_profile: "strict" | "extended";
             exports: components["schemas"]["ProductExports"];
             product_retention: components["schemas"]["ProductRetention"];
             quotas: components["schemas"]["ProductQuotas"];
@@ -1826,9 +1819,8 @@ export interface components {
             };
         };
         /**
-         * @description The requested route family is not available for the current
-         *     `collection_profile`, or the requested period does not contain the
-         *     required Extended data envelope.
+         * @description The requested period is not covered by collected data
+         *     (`REPORT_NOT_AVAILABLE_FOR_REQUESTED_PERIOD`).
          */
         ReportAvailabilityConflict: {
             headers: {
@@ -1865,9 +1857,10 @@ export interface components {
         /**
          * @description Grouping dimension for breakdown endpoint.
          *     When `dimension=tenant`, rows are grouped by stable `tenant_id`. The
+         *     statistics of a tenant are those of the page's client space. The
          *     response also includes `tenant_slug` and `tenant_name` as display labels.
          */
-        BreakdownDimension: "device" | "referrer" | "page" | "browser" | "os" | "tenant";
+        BreakdownDimension: "device" | "referrer" | "page" | "browser" | "os" | "country" | "tenant";
         /** @description Number of rows returned by breakdown endpoint. */
         BreakdownLimit: number;
         /** @description Compare current range against the previous equivalent period. */

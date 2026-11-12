@@ -14,13 +14,9 @@ const report = { ...range, compare: 'prev_period', traffic: 'humans', limit: 200
 
 const availability: components['schemas']['ReportAvailability'] = {
   route: 'future-public-route-id',
-  classification: 'mixed',
-  currentProfile: 'extended',
-  collectionProfileEffectiveAt: '2026-10-12T00:00:00Z',
-  current: { requestedStart: '2026-10-01T00:00:00Z', requestedEnd: '2026-10-24T23:59:59Z', compatibleStart: '2026-10-01T00:00:00Z', compatibleEnd: '2026-10-24T23:59:59Z', status: 'available', reason: 'strict_safe_route' },
+  current: { requestedStart: '2026-10-01T00:00:00Z', requestedEnd: '2026-10-24T23:59:59Z', compatibleStart: '2026-10-01T00:00:00Z', compatibleEnd: '2026-10-24T23:59:59Z', status: 'available', reason: null },
   compare: null,
-  readModel: { strictSafe: ['future-baseline-slice'], extended: ['future-enriched-slice'] },
-  sections: [{ id: 'future-public-section-id', classification: 'extended_only', current: { requestedStart: '2026-10-01T00:00:00Z', requestedEnd: '2026-10-24T23:59:59Z', compatibleStart: '2026-10-12T00:00:00Z', compatibleEnd: '2026-10-24T23:59:59Z', status: 'partially_available_after_effective_at', reason: 'requested_period_crosses_profile_change' }, compare: null }],
+  sections: [{ id: 'future-public-section-id', current: { requestedStart: '2026-10-01T00:00:00Z', requestedEnd: '2026-10-24T23:59:59Z', compatibleStart: '2026-10-12T00:00:00Z', compatibleEnd: '2026-10-24T23:59:59Z', status: 'partially_available_outside_source_coverage', reason: 'outside_source_coverage' }, compare: null }],
 };
 const meta: components['schemas']['MeteredMeta'] = {
   request_id: 'api-body-request',
@@ -86,7 +82,7 @@ test('typed response preserves partial availability, opaque IDs, charging and ad
   const response = await client.metrics.timeseries(range, { requestId: 'consumer-request' });
   assert.deepEqual(response.data, timeseries);
   assert.equal(response.data.availability.current.status, 'available');
-  assert.equal(response.data.availability.sections[0]?.current.status, 'partially_available_after_effective_at');
+  assert.equal(response.data.availability.sections[0]?.current.status, 'partially_available_outside_source_coverage');
   assert.equal(response.data.availability.route, 'future-public-route-id');
   assert.equal(response.data.meta.units_charged, 3);
   assert.deepEqual(response.metadata.metering, meta);
@@ -179,4 +175,24 @@ test('facade forwards request timeout and cancellation options', async () => {
   await assert.rejects(client.sites.list({ timeoutMs: 10 }), { code: 'TIMEOUT' });
   await assert.rejects(client.reports.overview({ siteId }, { signal: AbortSignal.abort() }), { code: 'ABORTED' });
   assert.equal(calls, 1);
+});
+
+test('exact-counts reporting precision and nullable rates are passed through typed and unchanged', async () => {
+  const surface: components['schemas']['SurfaceMeta'] = {
+    compareWindow: { enabled: false },
+    dataFreshness: { status: 'fresh' },
+    exportCapability: { csv: true, level: 'standard' },
+    reportingPrecision: {
+      version: 'exact-counts-v1', countStep: 1, rateStep: 0.01,
+      smallPositiveCount: { lower: 1, upper: 9, representative: 5 },
+    },
+  };
+  const payload = { ...timeseries, meta: { ...meta, surface } } satisfies ApiData<'/v1/metrics/timeseries'>;
+  const client = createPomeloClient({ token, fetch: async () => Response.json(payload) });
+  const { data, metadata } = await client.metrics.timeseries(range);
+  assert.deepEqual(data.meta.surface?.reportingPrecision, surface.reportingPrecision);
+  assert.equal(data.meta.surface?.reportingPrecision?.version, 'exact-counts-v1');
+  assert.equal(metadata.metering?.surface?.reportingPrecision?.smallPositiveCount.representative, 5);
+  const rate: components['schemas']['AcquisitionSummaryTotals'] = { sessions: 3, engagement_rate: null, avg_pages_per_session: null, avg_session_eng_time_ms: null };
+  assert.deepEqual(JSON.parse(JSON.stringify(rate)), rate);
 });

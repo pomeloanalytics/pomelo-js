@@ -6,10 +6,9 @@ export async function runMockExample(): Promise<void> {
   const payload: ApiData<'/v1/metrics/timeseries'> = {
     points: [{ ts: '2026-10-01T00:00:00Z', value: 12 }],
     availability: {
-      route: 'synthetic-route', classification: 'strict_safe', currentProfile: 'strict',
-      collectionProfileEffectiveAt: null, compare: null, sections: [],
+      route: 'synthetic-route', compare: null, sections: [],
       current: {
-        status: 'available', reason: 'strict_safe_route',
+        status: 'available', reason: null,
         requestedStart: '2026-10-01T00:00:00Z', requestedEnd: '2026-10-01T23:59:59Z',
         compatibleStart: '2026-10-01T00:00:00Z', compatibleEnd: '2026-10-01T23:59:59Z',
       },
@@ -25,19 +24,21 @@ export async function runMockExample(): Promise<void> {
     range: { start: '2026-10-01T00:00:00Z', end: '2026-10-01T23:59:59Z', compare_start: null, compare_end: null },
     compare: null,
     current: {
+      campaigns_enabled: false, consented_sessions: 0, channel_timeseries: [],
       goals_configured: false,
       totals: { sessions: 12, engagement_rate: 0.5, avg_pages_per_session: 2, avg_session_eng_time_ms: 1000 },
-      coverage: { direct_sessions: 12, non_direct_sessions: 0, tagged_sessions: 0, direct_share: 1, non_direct_share: 0, tagged_share: 0 },
+      coverage: { direct_sessions: 12, non_direct_sessions: 0, direct_share: 1, non_direct_share: 0 },
       mix_timeseries: [], channels: [],
     },
   };
   const details: ApiData<'/v1/reports/acquisition'> = {
     ...summary,
-    availability: { ...payload.availability, currentProfile: 'extended' },
+    availability: payload.availability,
     compare: null,
     current: {
+      campaigns_enabled: true, consented_sessions: 12,
       goals_configured: true,
-      dimensions: { sources: [], mediums: [], campaigns: [], referrers: [] },
+      dimensions: { sources: [], mediums: [], campaigns: [], contents: [], terms: [], referrers: [] },
       landing_pages: [],
       impact: {
         channels: [], landing_pages: [],

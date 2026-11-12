@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+- Sync the reviewed public contract for a single audience measurement and the
+  Campagnes option. Availability statuses `locked_by_profile` and
+  `partially_available_after_effective_at`, the reasons `strict_safe_route`,
+  `extended_data_required` and `requested_period_crosses_profile_change`, and
+  the availability fields `currentProfile`, `classification`, `readModel` and
+  `collectionProfileEffectiveAt` are removed. Reasons are now
+  `campaigns_option_required`, `outside_source_coverage` or `null`.
+- Acquisition responses add `campaigns_enabled`, `consented_sessions` and the
+  `contents` and `terms` dimensions, and drop the `tagged_*` coverage fields.
+- Rates, shares and means are `number | null` (null under 10 contributors);
+  envelopes may carry `small_site`.
+- `meta.surface.reportingPrecision` is `exact-counts-v1`: counts are exact from
+  10 and the value 5 stands for 1 to 9 (render as `< 10`).
+- The HTTP client implementation is unchanged.
+
 ## 0.1.0-beta.3
 
 - Add optional per-metric Content sample counts and the selected measurement method to generated API types.
