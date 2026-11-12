@@ -196,3 +196,14 @@ test('exact-counts reporting precision and nullable rates are passed through typ
   const rate: components['schemas']['AcquisitionSummaryTotals'] = { sessions: 3, engagement_rate: null, avg_pages_per_session: null, avg_session_eng_time_ms: null };
   assert.deepEqual(JSON.parse(JSON.stringify(rate)), rate);
 });
+
+test('a small-site basis says why its totals come from a wider period', () => {
+  const basis: components['schemas']['SmallSiteBasis'] = {
+    period: { start: '2026-08-01T00:00:00.000Z', end: '2026-08-31T23:59:59.999Z' },
+    totals: { sessions: 17, engagement_rate: 0.5 },
+    reason: 'filter_complement',
+  };
+  assert.equal(basis.reason, 'filter_complement');
+  const legacy: components['schemas']['SmallSiteBasis'] = { period: basis.period, totals: basis.totals };
+  assert.equal(legacy.reason, undefined);
+});

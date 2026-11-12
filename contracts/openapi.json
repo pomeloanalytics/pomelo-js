@@ -2647,7 +2647,7 @@
         "type": "object"
       },
       "SmallSiteBasis": {
-        "description": "Small-site rule. A rate, a mean or a percentile needs ten contributors;\nbelow, it is `null` in `current`. When the requested period has fewer,\nthese are the same totals over the shortest calendar period (ISO week,\nmonth, quarter, year) that contains it and counts ten contributors.\nAbsent or `null` when no such period exists.\n",
+        "description": "Small-site rule. A rate, a mean or a percentile needs ten contributors;\nbelow, it is `null` in `current`. When the requested period has fewer,\nthese are the same totals over the shortest calendar period (ISO week,\nmonth, quarter, year) that contains it and counts ten contributors.\nComplement rule: when a filter sets apart 1 to 9 visits of the site in\nthe requested period, its rates, means, durations and percentiles are\n`null` (rows included, and in `compare`), and these totals come from\nthe shortest such period where the filter sets apart none or at least\nten visits (`reason: filter_complement`). Counts are unchanged.\nAbsent or `null` when no such period exists.\n",
         "properties": {
           "period": {
             "properties": {
@@ -2665,6 +2665,13 @@
               "end"
             ],
             "type": "object"
+          },
+          "reason": {
+            "enum": [
+              "small_site",
+              "filter_complement"
+            ],
+            "type": "string"
           },
           "totals": {
             "additionalProperties": {

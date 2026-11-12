@@ -1469,6 +1469,11 @@ export interface components {
          *     below, it is `null` in `current`. When the requested period has fewer,
          *     these are the same totals over the shortest calendar period (ISO week,
          *     month, quarter, year) that contains it and counts ten contributors.
+         *     Complement rule: when a filter sets apart 1 to 9 visits of the site in
+         *     the requested period, its rates, means, durations and percentiles are
+         *     `null` (rows included, and in `compare`), and these totals come from
+         *     the shortest such period where the filter sets apart none or at least
+         *     ten visits (`reason: filter_complement`). Counts are unchanged.
          *     Absent or `null` when no such period exists.
          */
         SmallSiteBasis: {
@@ -1478,6 +1483,8 @@ export interface components {
                 /** Format: date-time */
                 start: string;
             };
+            /** @enum {string} */
+            reason?: "small_site" | "filter_complement";
             totals: {
                 [key: string]: number | null;
             };

@@ -1,7 +1,7 @@
 {
   "artifact": {
     "path": "openapi.json",
-    "sha256": "c915321650c464b6d06299c3290eea5a6af404d780f7901c108275614de2334f"
+    "sha256": "a14f9247531810400129c306efe58adfbc1926dd996bbd61ef33df6011dad870"
   },
   "components": {
     "headers": [
@@ -190,7 +190,7 @@
   ],
   "policy": {
     "path": "openapi/public-export-policy.json",
-    "sha256": "6e5f03532d27c49526152c5cf8071421617e441d0faceb5ac9c6112e2dc82f7d",
+    "sha256": "2402780ac6cf4bd923a9ec56a24e39b974fc8c97fc56f881d908143bc1fd230b",
     "version": 1
   },
   "projections": [
@@ -232,9 +232,9 @@
   ],
   "proof": "Source-only projection; no deployed artifact or authenticated runtime verification.",
   "source": {
-    "commit": "01e43ba7705562c6bc6fa37ea741adea90a76ecb",
+    "commit": "5c8d644e6cfc6c1fe0ee0464a55c7c1c505d8623",
     "path": "openapi/v1.yaml",
-    "sha256": "5766a4103918d420d01551d508ffd280d51db757d496612d0b86321970590e2e"
+    "sha256": "984965d9f7d0c585bf167d8338278da179a35f041f40fdad0496d90180602b15"
   },
   "version": 1
 }

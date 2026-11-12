@@ -15,6 +15,12 @@
   envelopes may carry `small_site`.
 - `meta.surface.reportingPrecision` is `exact-counts-v1`: counts are exact from
   10 and the value 5 stands for 1 to 9 (render as `< 10`).
+- `small_site.reason` (`small_site` or `filter_complement`) says why the
+  totals come from a wider period: too few visits, or a filter that sets 1 to
+  9 visits of the site apart (its rates and means are then null).
+- Report filters accept only values published for the period (10 visits or
+  more); others are refused with 422 `INVALID_PARAMS`
+  (`reason: filter_value_not_published`).
 - The HTTP client implementation is unchanged.
 
 ## 0.1.0-beta.3
