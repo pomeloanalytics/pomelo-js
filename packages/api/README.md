@@ -51,8 +51,8 @@ const { data: account } = await pomelo.me();
 
 Create a read token in the Pomelo dashboard as described in the getting-started
 guide. Keep it in server configuration, outside source control and browser code.
-API access depends on your plan and the token's permissions. The API enforces
-collection-profile availability for each endpoint.
+API access depends on your plan and the token's permissions. Each report
+returns `availability`, which tells you whether the requested period is covered.
 
 ## Read metrics
 
@@ -169,7 +169,7 @@ if ('dimensions' in data.current && data.current.impact) {
 }
 ```
 
-Impact is conditional on the server response and Extended data. It reports
+Impact is conditional on the server response and on the Campagnes option. It reports
 distinct converted visits using first-pageview attribution; repeated goal
 matches count once. Check availability as well as the optional impact object.
 The SDK supplies no impact defaults or enrichment.
@@ -187,10 +187,19 @@ curl --get 'https://api.pomeloanalytics.com/v1/reports/acquisition' \
   --data-urlencode 'goal_id=goal-test'
 ```
 
-HTTP 200 on a mixed route means its strict-safe baseline succeeded. Check
-`availability.sections` for sections that remain locked or only partially
-available. Tenant-scoped reads use a stable opaque `tenantId`; the server checks
+Check `availability.sections` for sections that are unavailable or only
+partially available: `reason` is `campaigns_option_required` when the Campagnes
+option is off, `outside_source_coverage` when the period is not covered, or
+`null`. Tenant-scoped reads use a stable opaque `tenantId`; the server checks
 the token's permissions and the site's configuration.
+
+## Reporting precision
+
+Counts are exact from 10 visits. In `meta.surface.reportingPrecision`
+(`version: 'exact-counts-v1'`), `smallPositiveCount.representative` (5) stands
+for any count from 1 to 9: display it as `< 10`, never as five visits. Rates,
+shares and means are `number | null` and are `null` under 10 contributors; the
+SDK returns them unchanged. Responses may also carry `small_site`.
 
 ## Errors and request metadata
 

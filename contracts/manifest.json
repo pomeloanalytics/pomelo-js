@@ -1,7 +1,7 @@
 {
   "artifact": {
     "path": "openapi.json",
-    "sha256": "a25bee7a19f78d15c320b9de72907be7522cb337b4d55cb146dd0f253c6dec3e"
+    "sha256": "a14f9247531810400129c306efe58adfbc1926dd996bbd61ef33df6011dad870"
   },
   "components": {
     "headers": [
@@ -64,8 +64,6 @@
       "ContentSummaryCurrent",
       "ContentSummaryReportResponse",
       "ContentTotals",
-      "DerivedProductCapability",
-      "EffectiveProductCapabilities",
       "ErrorBody",
       "ErrorResponse",
       "Goal",
@@ -85,9 +83,6 @@
       "Quotas",
       "Range",
       "ReportAvailability",
-      "ReportAvailabilityClassification",
-      "ReportAvailabilityReadModel",
-      "ReportAvailabilityReadModelSliceId",
       "ReportAvailabilityReason",
       "ReportAvailabilityRouteId",
       "ReportAvailabilitySectionId",
@@ -97,8 +92,8 @@
       "RetentionPolicy",
       "SiteItem",
       "SiteProductConfiguration",
-      "SiteProductDashboard",
       "SitesResponse",
+      "SmallSiteBasis",
       "SurfaceCompareWindow",
       "SurfaceDataFreshness",
       "SurfaceExportCapability",
@@ -195,7 +190,7 @@
   ],
   "policy": {
     "path": "openapi/public-export-policy.json",
-    "sha256": "bf39c504ce0e5dce77dfc7e355abcbd0b7a80d24449e83082c26b77808150a37",
+    "sha256": "2402780ac6cf4bd923a9ec56a24e39b974fc8c97fc56f881d908143bc1fd230b",
     "version": 1
   },
   "projections": [
@@ -216,13 +211,6 @@
     {
       "compatibility": "type-widening",
       "kind": "opaque-identifier",
-      "outputSha256": "df38c2303061d6687eb9c1b746f70a3b123d1a09b461e2dcdaf32e0dcce33098",
-      "pointer": "/components/schemas/ReportAvailabilityReadModelSliceId",
-      "sourceSha256": "0f5482d80019f7c13101fea011715630ccff4a0c1863a9690ff5f092df326ed5"
-    },
-    {
-      "compatibility": "type-widening",
-      "kind": "opaque-identifier",
       "outputSha256": "b400369bac3acc7da4132f6d565287db8ce4319eecc89b8b9cb3548b6da7f462",
       "pointer": "/components/schemas/ReportAvailabilityRouteId",
       "sourceSha256": "fcd52ea0ea0f15f7f74e1dc977b157b793e6439e967969664ae2fbf26543f47d"
@@ -232,7 +220,7 @@
       "kind": "opaque-identifier",
       "outputSha256": "250fb96d96eced45c6c8c4896ae6ffb5b2d8c9e54f6c9a8aba5d2aeebb5dbcb2",
       "pointer": "/components/schemas/ReportAvailabilitySectionId",
-      "sourceSha256": "487411ddc3e0ab518334239f3e0baa97b2c9096f655e18ef116aeb3d31b22e12"
+      "sourceSha256": "56617642b75f9719c5e8003a2b09d1e7dff7a5b013f78b5482d2c336a2fa5e8f"
     },
     {
       "compatibility": "documentation-only",
@@ -244,9 +232,9 @@
   ],
   "proof": "Source-only projection; no deployed artifact or authenticated runtime verification.",
   "source": {
-    "commit": "ec937e154fab28232fdc75d9f12a99c9fe653c79",
+    "commit": "5c8d644e6cfc6c1fe0ee0464a55c7c1c505d8623",
     "path": "openapi/v1.yaml",
-    "sha256": "4e0f83ebd0e6dd40c045085de583876b5f3d657f3b0200fa34eab3369b0d4ba5"
+    "sha256": "984965d9f7d0c585bf167d8338278da179a35f041f40fdad0496d90180602b15"
   },
   "version": 1
 }

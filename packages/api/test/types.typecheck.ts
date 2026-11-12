@@ -40,7 +40,7 @@ export function checkPublicTypes(client: PomeloClient): void {
       const mediums: components['schemas']['AcquisitionDimensionImpactItem'][] = impact.mediums;
       const campaigns: components['schemas']['AcquisitionDimensionImpactItem'][] = impact.campaigns;
       const converted: number | undefined = sources[0]?.converted_sessions;
-      const rate: number | undefined = campaigns[0]?.session_conversion_rate;
+      const rate: number | null | undefined = campaigns[0]?.session_conversion_rate;
       void { mediums, converted, rate };
       // @ts-expect-error response fields retain their wire names.
       void sources[0]?.convertedSessions;

@@ -4,7 +4,7 @@ import { createPomeloClient } from '../src/index.js';
 import type { components } from '../src/index.js';
 
 const currentPeriod: components['schemas']['ReportPeriodAvailability'] = {
-  status: 'available', reason: 'strict_safe_route',
+  status: 'available', reason: null,
   requestedStart: '2026-10-01T00:00:00Z', requestedEnd: '2026-10-24T23:59:59Z',
   compatibleStart: '2026-10-01T00:00:00Z', compatibleEnd: '2026-10-24T23:59:59Z',
 };
@@ -12,9 +12,8 @@ const common = {
   range: { start: '2026-10-01T00:00:00Z', end: '2026-10-24T23:59:59Z', compare_start: null, compare_end: null },
   compare: null,
   availability: {
-    route: 'acquisition', classification: 'mixed', currentProfile: 'strict',
-    collectionProfileEffectiveAt: null, current: currentPeriod, compare: null,
-    sections: [{ id: 'acquisition_attribution', classification: 'extended_only', current: { ...currentPeriod, status: 'locked_by_profile', reason: 'extended_data_required', compatibleStart: null, compatibleEnd: null }, compare: null }],
+    route: 'acquisition', current: currentPeriod, compare: null,
+    sections: [{ id: 'acquisition_attribution', current: { ...currentPeriod, status: 'not_available_for_requested_period', reason: 'campaigns_option_required', compatibleStart: null, compatibleEnd: null }, compare: null }],
   } satisfies components['schemas']['ReportAvailability'],
   meta: {
     request_id: 'body-request', units_charged: 2, billable_overage: false,
@@ -25,6 +24,7 @@ const variants = {
   full: {
     ...common,
     current: {
+      campaigns_enabled: false, consented_sessions: 0,
       totals: { sessions: 12, pageviews: 20, engagement_rate: 0.5, avg_session_eng_time_ms: 1000 },
       by_channel: [{ channel: 'Direct', sessions: 12 }], by_day: [], top_referrers: [],
       top_sources: [], top_mediums: [], top_campaigns: [], top_landing_pages: [],
@@ -33,9 +33,10 @@ const variants = {
   summary: {
     ...common,
     current: {
+      campaigns_enabled: false, consented_sessions: 0, channel_timeseries: [],
       goals_configured: false,
       totals: { sessions: 12, engagement_rate: 0.5, avg_pages_per_session: 2, avg_session_eng_time_ms: 1000 },
-      coverage: { direct_sessions: 12, non_direct_sessions: 0, tagged_sessions: 0, direct_share: 1, non_direct_share: 0, tagged_share: 0 },
+      coverage: { direct_sessions: 12, non_direct_sessions: 0, direct_share: 1, non_direct_share: 0 },
       mix_timeseries: [],
       channels: [{ channel: 'Direct', sessions: 12, engagement_rate: 0.5, avg_pages_per_session: 2, avg_session_eng_time_ms: 1000, share: 1 }],
     },
@@ -43,8 +44,9 @@ const variants = {
   details: {
     ...common,
     current: {
+      campaigns_enabled: false, consented_sessions: 0,
       goals_configured: false,
-      dimensions: { sources: [], mediums: [], campaigns: [], referrers: [] },
+      dimensions: { sources: [], mediums: [], campaigns: [], contents: [], terms: [], referrers: [] },
       landing_pages: [],
     },
   } satisfies components['schemas']['AcquisitionDetailsReportResponse'],
@@ -64,7 +66,7 @@ for (const include of ['full', 'summary', 'details'] as const) {
     const result = await client.reports.acquisition({ siteId: 'site-test', from: '2026-10-01', to: '2026-10-24', include });
     assert.deepEqual(result.data, payload);
     assert.equal(result.metadata.metering, result.data.meta);
-    assert.equal(result.data.availability.sections[0]?.current.status, 'locked_by_profile');
+    assert.equal(result.data.availability.sections[0]?.current.status, 'not_available_for_requested_period');
     assert.equal(result.metadata.requestId, 'header-request');
     assert.equal(requests, 1);
     assert.equal('channels' in result.data.current, include === 'summary');
@@ -87,7 +89,7 @@ test('Acquisition details keeps conditional goal impact absent, null or populate
 test('Acquisition goalId is encoded as goal_id in one GET and dimension impact is preserved', async () => {
   const payload = {
     ...variants.details,
-    availability: { ...common.availability, currentProfile: 'extended', sections: [] },
+    availability: { ...common.availability, sections: [] },
     current: {
       ...variants.details.current,
       goals_configured: true,
@@ -135,4 +137,23 @@ test('omitting Acquisition goalId leaves goal selection and dates to the server'
   assert.deepEqual(queries, [
     { site_id: 'site-test', include: 'details' },
   ]);
+});
+
+test('Acquisition reports the Campagnes option as the availability reason and keeps null rates', async () => {
+  const payload = {
+    ...variants.summary,
+    current: {
+      ...variants.summary.current,
+      totals: { sessions: 4, engagement_rate: null, avg_pages_per_session: null, avg_session_eng_time_ms: null },
+    },
+  } satisfies components['schemas']['AcquisitionSummaryReportResponse'];
+  const client = createPomeloClient({ token: 'synthetic-test-token', fetch: async () => Response.json(payload) });
+  const { data } = await client.reports.acquisition({ siteId: 'site-test', include: 'summary' });
+  const reason: components['schemas']['ReportAvailabilityReason'] = data.availability.sections[0]?.current.reason ?? null;
+  assert.equal(reason, 'campaigns_option_required');
+  assert.equal(data.current.campaigns_enabled, false);
+  assert.ok('totals' in data.current);
+  const totals: { engagement_rate: number | null } = data.current.totals;
+  assert.equal(totals.engagement_rate, null);
+  assert.deepEqual(data, payload);
 });
