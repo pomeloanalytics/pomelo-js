@@ -4,7 +4,7 @@ import type { ApiData } from '@pomeloanalytics/api';
 /** A runnable consumer example that uses synthetic data and makes no network call. */
 export async function runMockExample(): Promise<void> {
   const payload: ApiData<'/v1/metrics/timeseries'> = {
-    points: [{ ts: '2026-10-01T00:00:00Z', value: 12 }],
+    period_total: 12, points: [{ ts: '2026-10-01T00:00:00Z', value: 12 }],
     availability: {
       route: 'synthetic-route', compare: null, sections: [],
       current: {
@@ -38,7 +38,7 @@ export async function runMockExample(): Promise<void> {
     current: {
       campaigns_enabled: true, consented_sessions: 12,
       goals_configured: true,
-      dimensions: { sources: [], mediums: [], campaigns: [], contents: [], terms: [], referrers: [] },
+      dimensions: { sources: [], mediums: [], campaigns: [], contents: [], terms: [], referrers: [], referrer_sources: [], referrer_types: [] },
       landing_pages: [],
       impact: {
         channels: [], landing_pages: [],

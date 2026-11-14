@@ -24,7 +24,7 @@ const meta: components['schemas']['MeteredMeta'] = {
   billable_overage: true,
   usage: { used_units: 110, overage_units: 10, included_units: 100, hard_cap_units: 200 },
 };
-const timeseries = { points: [{ ts: '2026-10-01T00:00:00Z', value: 12 }], availability, meta, future_field: { retained: true } } satisfies ApiData<'/v1/metrics/timeseries'> & { future_field: unknown };
+const timeseries = { period_total: 12, points: [{ ts: '2026-10-01T00:00:00Z', value: 12 }], availability, meta, future_field: { retained: true } } satisfies ApiData<'/v1/metrics/timeseries'> & { future_field: unknown };
 
 function mock(payload: unknown = timeseries, status = 200): { client: PomeloClient; urls: URL[]; headers: Headers[] } {
   const urls: URL[] = [];
@@ -104,12 +104,12 @@ test('optional query values remain omitted and server defaults are not materiali
   assert.equal(urls[2]?.search, '');
 });
 
-test('legacy include alias, boundary limits and encoded filters are sent without rewriting', async () => {
+test('include values, boundary limits and encoded filters are sent without rewriting', async () => {
   const { client, urls } = mock();
   const filters = JSON.stringify({ referrer: 'example.test/a?x=1&y=2', device: 'mobile' });
-  await client.reports.content({ siteId, from, to, include: 'details', limit: 2000 });
+  await client.reports.content({ siteId, from, to, include: 'full', limit: 2000 });
   await client.metrics.breakdown({ siteId: 'site /?&test', tenantId: 'tenant /?&test', filters, limit: 500 });
-  assert.equal(urls[0]?.searchParams.get('include'), 'details');
+  assert.equal(urls[0]?.searchParams.get('include'), 'full');
   assert.equal(urls[0]?.searchParams.get('limit'), '2000');
   assert.equal(urls[1]?.searchParams.get('filters'), filters);
   assert.equal(urls[1]?.searchParams.get('site_id'), 'site /?&test');
@@ -177,23 +177,23 @@ test('facade forwards request timeout and cancellation options', async () => {
   assert.equal(calls, 1);
 });
 
-test('exact-counts reporting precision and nullable rates are passed through typed and unchanged', async () => {
+test('exact-masked-counts reporting precision and masked counts are passed through typed and unchanged', async () => {
   const surface: components['schemas']['SurfaceMeta'] = {
     compareWindow: { enabled: false },
     dataFreshness: { status: 'fresh' },
     exportCapability: { csv: true, level: 'standard' },
-    reportingPrecision: {
-      version: 'exact-counts-v1', countStep: 1, rateStep: 0.01,
-      smallPositiveCount: { lower: 1, upper: 9, representative: 5 },
-    },
+    reportingPrecision: { version: 'exact-masked-counts-v1', minimumCount: 10, rateStep: 0.01 },
   };
-  const payload = { ...timeseries, meta: { ...meta, surface } } satisfies ApiData<'/v1/metrics/timeseries'>;
+  const payload = { ...timeseries, period_total: null, points: [{ ts: '2026-10-01T00:00:00Z', value: null }, { ts: '2026-10-02T00:00:00Z', value: 0 }, { ts: '2026-10-03T00:00:00Z', value: 12 }], meta: { ...meta, surface } } satisfies ApiData<'/v1/metrics/timeseries'>;
   const client = createPomeloClient({ token, fetch: async () => Response.json(payload) });
   const { data, metadata } = await client.metrics.timeseries(range);
   assert.deepEqual(data.meta.surface?.reportingPrecision, surface.reportingPrecision);
-  assert.equal(data.meta.surface?.reportingPrecision?.version, 'exact-counts-v1');
-  assert.equal(metadata.metering?.surface?.reportingPrecision?.smallPositiveCount.representative, 5);
-  const rate: components['schemas']['AcquisitionSummaryTotals'] = { sessions: 3, engagement_rate: null, avg_pages_per_session: null, avg_session_eng_time_ms: null };
+  assert.equal(data.meta.surface?.reportingPrecision?.version, 'exact-masked-counts-v1');
+  assert.equal(metadata.metering?.surface?.reportingPrecision?.minimumCount, 10);
+  // A masked count stays null (never 0, never a representative value); a measured zero stays 0.
+  assert.equal(data.period_total, null);
+  assert.deepEqual(data.points.map((point) => point.value), [null, 0, 12]);
+  const rate: components['schemas']['AcquisitionSummaryTotals'] = { sessions: null, engagement_rate: null, avg_pages_per_session: null, avg_session_eng_time_ms: null };
   assert.deepEqual(JSON.parse(JSON.stringify(rate)), rate);
 });
 

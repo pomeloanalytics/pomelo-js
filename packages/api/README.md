@@ -107,7 +107,7 @@ Response fields are never renamed.
 Dates use inclusive UTC `YYYY-MM-DD` values. Pass explicit dates to bound a read.
 The server owns defaults, period validation, entitlements, and numeric limits;
 the SDK does not choose content depth, clamp limits, or change a requested range.
-The `details` alias for content `include` remains accepted by the public contract.
+Content `include` accepts `summary` or `full`.
 
 Full Content responses can include `current.metric_method` and
 `current.pages[].performance.n_lcp`, `n_fcp`, `n_inp`, `n_cls` and `n_ttfb`.
@@ -145,8 +145,9 @@ if ('channels' in data.current) {
 }
 ```
 
-For Acquisition, `details` is a distinct shape. For Content, `details` is the
-deprecated alias for `full`. Actions accepts `summary`, `full`, and `details`
+For Acquisition, `details` is a distinct shape (it adds the `referrer_sources`
+and `referrer_types` dimensions). Content accepts only `summary` and `full`.
+Actions accepts `summary`, `full`, and `details`
 using its single response schema; summary leaves detail lists empty on the server.
 Omitting `include` leaves the server's selection unchanged.
 
@@ -195,11 +196,19 @@ the token's permissions and the site's configuration.
 
 ## Reporting precision
 
-Counts are exact from 10 visits. In `meta.surface.reportingPrecision`
-(`version: 'exact-counts-v1'`), `smallPositiveCount.representative` (5) stands
-for any count from 1 to 9: display it as `< 10`, never as five visits. Rates,
-shares and means are `number | null` and are `null` under 10 contributors; the
-SDK returns them unchanged. Responses may also carry `small_site`.
+`meta.surface.reportingPrecision` is
+`{ version: 'exact-masked-counts-v1', minimumCount: 10, rateStep: 0.01 }`.
+Counts are exact from 10. A count from 1 to 9 is published as `null`: display
+it as `< 10`. It is never `0` and never a representative value such as 5.
+`0` is a measured zero. Rates, shares, means and p75 values are `null` under 10
+contributors. `delta` and `delta_pct` are published only when both counts are.
+`timeseries` responses carry `period_total`, which is `null` when masked.
+
+The SDK returns these values unchanged: it does not retry, round or rebuild
+anything. A masked value stays `null`: never add it up, subtract it or compute
+a gap from it. A missing observation is signalled by the field or the
+availability state of the section, not by a number. Responses may also carry
+`small_site`.
 
 ## Errors and request metadata
 

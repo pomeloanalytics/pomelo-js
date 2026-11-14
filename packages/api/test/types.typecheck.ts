@@ -12,7 +12,7 @@ export function checkPublicTypes(client: PomeloClient): void {
     if (current.include === 'full') {
       const method: 'legacy' | 'web-vitals-6.2.3-cls1' | undefined = current.metric_method;
       const performance = current.pages[0]?.performance;
-      const counts: (number | undefined)[] = [performance?.n_lcp, performance?.n_fcp, performance?.n_inp, performance?.n_cls, performance?.n_ttfb];
+      const counts: (number | null | undefined)[] = [performance?.n_lcp, performance?.n_fcp, performance?.n_inp, performance?.n_cls, performance?.n_ttfb];
       // @ts-expect-error response fields keep their wire names.
       void performance?.nInp;
       return { method, counts };
@@ -39,7 +39,7 @@ export function checkPublicTypes(client: PomeloClient): void {
       const sources: components['schemas']['AcquisitionDimensionImpactItem'][] = impact.sources;
       const mediums: components['schemas']['AcquisitionDimensionImpactItem'][] = impact.mediums;
       const campaigns: components['schemas']['AcquisitionDimensionImpactItem'][] = impact.campaigns;
-      const converted: number | undefined = sources[0]?.converted_sessions;
+      const converted: number | null | undefined = sources[0]?.converted_sessions;
       const rate: number | null | undefined = campaigns[0]?.session_conversion_rate;
       void { mediums, converted, rate };
       // @ts-expect-error response fields retain their wire names.

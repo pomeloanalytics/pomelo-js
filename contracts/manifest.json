@@ -1,7 +1,7 @@
 {
   "artifact": {
     "path": "openapi.json",
-    "sha256": "a14f9247531810400129c306efe58adfbc1926dd996bbd61ef33df6011dad870"
+    "sha256": "447a87f79875879809713c1a3f61ebcfdad2e0b08c3202ea40ee37a633f9d5e5"
   },
   "components": {
     "headers": [
@@ -48,6 +48,8 @@
       "AcquisitionFullReportResponse",
       "AcquisitionImpact",
       "AcquisitionLandingPageSummaryItem",
+      "AcquisitionReferrerSourceItem",
+      "AcquisitionReferrerTypeItem",
       "AcquisitionReportResponse",
       "AcquisitionSummaryChannelItem",
       "AcquisitionSummaryReportResponse",
@@ -82,6 +84,7 @@
       "ProductRetention",
       "Quotas",
       "Range",
+      "ReferrerType",
       "ReportAvailability",
       "ReportAvailabilityReason",
       "ReportAvailabilityRouteId",
@@ -98,12 +101,12 @@
       "SurfaceDataFreshness",
       "SurfaceExportCapability",
       "SurfaceMeta",
-      "TechnicalRetention",
       "TenantItem",
       "TenantsResponse",
       "TimeseriesPoint",
       "TimeseriesResponse",
       "TopReferrer",
+      "TopReferrerSource",
       "TopSource",
       "UsageCurrentResponse",
       "UsageHistoryItem",
@@ -128,7 +131,7 @@
   },
   "omitted": {
     "components": 2,
-    "examples": 5,
+    "examples": 6,
     "operations": 0,
     "otherAnnotations": 0,
     "paths": 0,
@@ -190,23 +193,23 @@
   ],
   "policy": {
     "path": "openapi/public-export-policy.json",
-    "sha256": "2402780ac6cf4bd923a9ec56a24e39b974fc8c97fc56f881d908143bc1fd230b",
+    "sha256": "5051b542dce9e2de6e077363dc6441dd9fa3be04f51cad09f4e5ab6d3f44ec13",
     "version": 1
   },
   "projections": [
     {
       "compatibility": "documentation-only",
       "kind": "reviewed-prose-replacement",
-      "outputSha256": "3b485bf4d41583812386e6736e127dd6852e0659f493806f9a4cbf09e2293eec",
+      "outputSha256": "e481a23b6e5babb8f7f1a1e42be7d8e398a719c32c2963bdeb7dea8931516365",
       "pointer": "/components/parameters/FromDate/description",
-      "sourceSha256": "af2489906ca0168d10d6fb705a18a5f7498d7b84b3095dbb035cd18b5ff5632e"
+      "sourceSha256": "4711a521ff60b5f5f3638eb8ab4e6263b44fe68e20b6d4dab9c6d98d6c95c9f8"
     },
     {
       "compatibility": "documentation-only",
       "kind": "reviewed-prose-replacement",
-      "outputSha256": "ded9bd1b9a6ad6531a5e308986435f20dcb505f8d3952e540ee2cd3e0c3cd626",
+      "outputSha256": "7fc67e2dc188430b80f1a134bb94d6e29509ac4e02e24eace07bb1e088d057f4",
       "pointer": "/components/parameters/ToDate/description",
-      "sourceSha256": "3cde5e9d66f765dc74157e06d52158466658383e8b3fbea39b93d3c4565c3257"
+      "sourceSha256": "0f5d9148db177c2a2143b44c6d896021cb9ee9f7fb90c3fa253b4e0f42852c92"
     },
     {
       "compatibility": "type-widening",
@@ -225,16 +228,16 @@
     {
       "compatibility": "documentation-only",
       "kind": "ascii-hyphen",
-      "outputSha256": "05551de35e0ca65794a5298ba5bd0292a380289ba6b3c11314f07f02683c921c",
+      "outputSha256": "b730344042c18034418c1c180bdc64a2ea4145b645a3bc5c441c65690353f4db",
       "pointer": "/paths/~1v1~1reports~1content/get/description",
-      "sourceSha256": "e0f86fabdd7cdfb4bed68e83cdaa5a1024dcbb19c959786b5b6bdaa8b53171fb"
+      "sourceSha256": "d4a2eee857edcc5a80940ef320ab47f3805c88af5efc112be2d223300ac89e2b"
     }
   ],
   "proof": "Source-only projection; no deployed artifact or authenticated runtime verification.",
   "source": {
-    "commit": "5c8d644e6cfc6c1fe0ee0464a55c7c1c505d8623",
+    "commit": "60d4762c88effdd4037c5c39ef929e1fabe2b461",
     "path": "openapi/v1.yaml",
-    "sha256": "984965d9f7d0c585bf167d8338278da179a35f041f40fdad0496d90180602b15"
+    "sha256": "763e8a0f2897c620dff521bab9cb78c50dc5fa8ca5a30ea8bdda5e63f6d2ee3f"
   },
   "version": 1
 }
