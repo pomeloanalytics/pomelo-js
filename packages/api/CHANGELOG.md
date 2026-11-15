@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-beta.4
 
 - Sync the reviewed public contract for a single audience measurement and the
   Campagnes option. Availability statuses `locked_by_profile` and
@@ -13,8 +13,14 @@
   `contents` and `terms` dimensions, and drop the `tagged_*` coverage fields.
 - Rates, shares and means are `number | null` (null under 10 contributors);
   envelopes may carry `small_site`.
-- `meta.surface.reportingPrecision` is `exact-counts-v1`: counts are exact from
-  10 and the value 5 stands for 1 to 9 (render as `< 10`).
+- `meta.surface.reportingPrecision` is
+  `{ version: 'exact-masked-counts-v1', minimumCount: 10, rateStep: 0.01 }`:
+  counts are exact from 10 and `null` from 1 to 9 (never 0, never 5; render as
+  `< 10`). Rates, means and p75 are `null` under 10 contributors; `delta` and
+  `delta_pct` are published only when both counts are.
+- Timeseries responses add `period_total`; Acquisition details add the
+  `referrer_sources` and `referrer_types` dimensions; Content `include` no
+  longer accepts `details` (`summary` or `full`).
 - `small_site.reason` (`small_site` or `filter_complement`) says why the
   totals come from a wider period: too few visits, or a filter that sets 1 to
   9 visits of the site apart (its rates and means are then null).

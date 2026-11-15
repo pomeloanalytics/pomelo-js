@@ -66,7 +66,7 @@ export interface paths {
                 query: {
                     /** @description Compare current range against the previous equivalent period. */
                     compare?: components["parameters"]["CompareParam"];
-                    /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
+                    /** @description Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
                     /** @description Number of rows returned by top lists for report endpoints. */
                     limit?: components["parameters"]["ReportLimit"];
@@ -77,7 +77,7 @@ export interface paths {
                      *     `tenant_id` identifies one tenant.
                      */
                     tenant_id?: components["parameters"]["TenantId"];
-                    /** @description Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today. */
+                    /** @description Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today. */
                     to?: components["parameters"]["ToDate"];
                     /** @description Traffic segment to include. */
                     traffic?: components["parameters"]["TrafficParam"];
@@ -189,7 +189,7 @@ export interface paths {
                      *     `{"device":"mobile","referrer":"google.com"}`.
                      */
                     filters?: components["parameters"]["Filters"];
-                    /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
+                    /** @description Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
                     /** @description Number of rows returned by breakdown endpoint. */
                     limit?: components["parameters"]["BreakdownLimit"];
@@ -207,7 +207,7 @@ export interface paths {
                      *     `tenant_id` identifies one tenant.
                      */
                     tenant_id?: components["parameters"]["TenantId"];
-                    /** @description Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today. */
+                    /** @description Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today. */
                     to?: components["parameters"]["ToDate"];
                 };
                 header?: {
@@ -265,9 +265,9 @@ export interface paths {
                      *     `{"device":"mobile","referrer":"google.com"}`.
                      */
                     filters?: components["parameters"]["Filters"];
-                    /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
+                    /** @description Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
-                    /** @description Granularity (`hour` can require higher plan). */
+                    /** @description Granularity (`day` or `hour`, on every plan with API access). */
                     interval?: components["parameters"]["Interval"];
                     /**
                      * @description Metric to aggregate (default `pageviews`). `sessions` uses the same
@@ -283,7 +283,7 @@ export interface paths {
                      *     `tenant_id` identifies one tenant.
                      */
                     tenant_id?: components["parameters"]["TenantId"];
-                    /** @description Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today. */
+                    /** @description Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today. */
                     to?: components["parameters"]["ToDate"];
                 };
                 header?: {
@@ -334,13 +334,21 @@ export interface paths {
         };
         /**
          * Acquisition channels, referrers, and landing pages
-         * @description Referring domains and landing pages of the visits. A direct visit has
-         *     no referring domain. Channels, sources, mediums, campaigns and impact by
-         *     source belong to the Campagnes option: `by_channel`, `channels`,
-         *     `channel_timeseries`, `top_sources`, `top_mediums`, `top_campaigns` and
-         *     the `dimensions` and `impact` source lists are computed on visits whose
-         *     visitor gave consent, with the usual reporting precision (rounded
-         *     counts, `< 10`, rows under 10 visits grouped, rates and means `null`
+         * @description Provenance of every visit: referring domains, the named sources that
+         *     gather them (google.fr and google.com under Google), the types of
+         *     referring site (search engine, social network, messaging, AI
+         *     assistant, other site) and landing pages. A direct visit has no
+         *     referring domain. Sources and types are read through a fixed table;
+         *     they never separate paid from organic.
+         *
+         *     Channels, campaign sources, mediums, campaigns and impact by source
+         *     belong to the Campagnes option: `by_channel`, `channels`,
+         *     `channel_timeseries`, `top_sources`, `top_mediums`, `top_campaigns`,
+         *     `dimensions.sources`, `dimensions.mediums`, `dimensions.campaigns`,
+         *     `dimensions.contents`, `dimensions.terms` and `impact` (except
+         *     `impact.landing_pages`) are computed on visits whose
+         *     visitor gave consent, with the usual reporting precision (exact
+         *     counts from 10, `< 10` below, rows under 10 visits grouped, rates and means `null`
          *     under 10 contributors), and are empty when the site does not have the
          *     option. `availability.sections` reports `acquisition_attribution` with
          *     the status of the report when the option is on and with the reason
@@ -365,7 +373,7 @@ export interface paths {
                 query: {
                     /** @description Compare current range against the previous equivalent period. */
                     compare?: components["parameters"]["CompareParam"];
-                    /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
+                    /** @description Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
                     /**
                      * @description Acquisition `include=details` only. Selects one configured goal belonging
@@ -385,7 +393,7 @@ export interface paths {
                      *     `tenant_id` identifies one tenant.
                      */
                     tenant_id?: components["parameters"]["TenantId"];
-                    /** @description Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today. */
+                    /** @description Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today. */
                     to?: components["parameters"]["ToDate"];
                     /** @description Traffic segment to include. */
                     traffic?: components["parameters"]["TrafficParam"];
@@ -459,7 +467,7 @@ export interface paths {
                     action_key?: components["parameters"]["ActionKey"];
                     /** @description Compare current range against the previous equivalent period. */
                     compare?: components["parameters"]["CompareParam"];
-                    /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
+                    /** @description Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
                     /** @description Report depth for Acquisition and Actions. When report include selection is enabled, omission selects summary; otherwise the handler uses full even when include is supplied. No unconditional default is declared here. */
                     include?: components["parameters"]["ReportInclude"];
@@ -472,7 +480,7 @@ export interface paths {
                      *     `tenant_id` identifies one tenant.
                      */
                     tenant_id?: components["parameters"]["TenantId"];
-                    /** @description Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today. */
+                    /** @description Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today. */
                     to?: components["parameters"]["ToDate"];
                     /** @description Traffic segment to include. */
                     traffic?: components["parameters"]["TrafficParam"];
@@ -524,7 +532,7 @@ export interface paths {
         };
         /**
          * Content report
-         * @description `summary` supports 1-365 inclusive UTC days. `full` and its deprecated
+         * @description `summary` supports 1-365 inclusive days of the site's time zone. `full` and its deprecated
          *     `details` alias support 1-90 days. Comparison supports at most 30 days
          *     in either mode. Responses are never truncated: if the serialized proxy
          *     response would exceed 5 MiB, the request returns HTTP 422 with
@@ -536,12 +544,12 @@ export interface paths {
                 query: {
                     /** @description Compare current range against the previous equivalent period. */
                     compare?: components["parameters"]["CompareParam"];
-                    /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
+                    /** @description Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
                     /**
-                     * @description Content response depth. `summary` returns totals and one global UTC
-                     *     pageview point per day; `limit` has no effect. `full` returns the
-                     *     detailed Content report. `details` is a deprecated alias for `full`.
+                     * @description Content response depth. `summary` returns totals and one global
+                     *     pageview point per day of the site's time zone; `limit` has no effect. `full` returns the
+                     *     detailed Content report.
                      *     When omitted, ranges up to 90 days use `full`; ranges from 91 through
                      *     365 days use `summary`.
                      */
@@ -555,7 +563,7 @@ export interface paths {
                      *     `tenant_id` identifies one tenant.
                      */
                     tenant_id?: components["parameters"]["TenantId"];
-                    /** @description Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today. */
+                    /** @description Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today. */
                     to?: components["parameters"]["ToDate"];
                     /** @description Traffic segment to include. */
                     traffic?: components["parameters"]["TrafficParam"];
@@ -619,7 +627,7 @@ export interface paths {
                 query: {
                     /** @description Compare current range against the previous equivalent period. */
                     compare?: components["parameters"]["CompareParam"];
-                    /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
+                    /** @description Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
                     /** @description Number of rows returned by top lists for report endpoints. */
                     limit?: components["parameters"]["ReportLimit"];
@@ -630,7 +638,7 @@ export interface paths {
                      *     `tenant_id` identifies one tenant.
                      */
                     tenant_id?: components["parameters"]["TenantId"];
-                    /** @description Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today. */
+                    /** @description Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today. */
                     to?: components["parameters"]["ToDate"];
                     /** @description Traffic segment to include. */
                     traffic?: components["parameters"]["TrafficParam"];
@@ -826,9 +834,9 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
+                    /** @description Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period. */
                     from?: components["parameters"]["FromDate"];
-                    /** @description Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today. */
+                    /** @description Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today. */
                     to?: components["parameters"]["ToDate"];
                 };
                 header?: {
@@ -871,16 +879,16 @@ export interface components {
         AcquisitionChannelItem: {
             /** @enum {string} */
             channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
-            sessions: number;
+            sessions: number | null;
         };
         /**
          * @description Visits with and without a referring domain. A direct visit has no
          *     referring domain.
          */
         AcquisitionCoverage: {
-            direct_sessions: number;
+            direct_sessions: number | null;
             direct_share: number | null;
-            non_direct_sessions: number;
+            non_direct_sessions: number | null;
             non_direct_share: number | null;
         };
         AcquisitionDetailsReportResponse: components["schemas"]["UserApiAcquisitionReportMeta"] & {
@@ -888,7 +896,7 @@ export interface components {
             current: components["schemas"]["UserApiAcquisitionDetailsCurrent"];
         };
         AcquisitionDimensionImpactItem: {
-            converted_sessions: number;
+            converted_sessions: number | null;
             session_conversion_rate: number | null;
             value: string;
         };
@@ -915,11 +923,11 @@ export interface components {
             channels: {
                 /** @enum {string} */
                 channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
-                converted_sessions: number;
+                converted_sessions: number | null;
                 session_conversion_rate: number | null;
             }[];
             landing_pages: {
-                converted_sessions: number;
+                converted_sessions: number | null;
                 path_canon: string | null;
                 session_conversion_rate: number | null;
             }[];
@@ -931,6 +939,20 @@ export interface components {
             page_title?: string | null;
             path_canon: string | null;
             share: number | null;
+        };
+        /**
+         * @description A named source of the provenance, all visits. `domains` lists its
+         *     domains of ten visits or more; the rest of the source is its other
+         *     domains.
+         */
+        AcquisitionReferrerSourceItem: components["schemas"]["AcquisitionDimensionItem"] & {
+            domains: components["schemas"]["AcquisitionDimensionItem"][];
+            type: components["schemas"]["ReferrerType"];
+        };
+        /** @description Visits by type of referring site, all visits. */
+        AcquisitionReferrerTypeItem: components["schemas"]["AcquisitionSummaryTotals"] & {
+            share: number | null;
+            value: components["schemas"]["ReferrerType"];
         };
         /** @description Source response variants selected by the effective Acquisition include mode. Current and comparison use the same shape; availability and metering remain present in every variant. */
         AcquisitionReportResponse: components["schemas"]["AcquisitionFullReportResponse"] | components["schemas"]["AcquisitionSummaryReportResponse"] | components["schemas"]["AcquisitionDetailsReportResponse"];
@@ -945,7 +967,7 @@ export interface components {
             avg_pages_per_session: number | null;
             avg_session_eng_time_ms: number | null;
             engagement_rate: number | null;
-            sessions: number;
+            sessions: number | null;
         };
         ActionsCurrent: {
             /**
@@ -966,9 +988,9 @@ export interface components {
                 form_action_path?: string | null;
                 /** @description Form identifier when the form action row can be narrowed by it. */
                 form_id?: string | null;
-                occurrences: number;
-                sessions: number;
-                /** @description Derived from the published rounded counts only; it reveals nothing finer than them. */
+                occurrences: number | null;
+                sessions: number | null;
+                /** @description Derived from the published counts only; it reveals nothing finer than them. */
                 share?: number | null;
                 top_page?: string | null;
             }[];
@@ -980,7 +1002,7 @@ export interface components {
                     path_canon?: string | null;
                     /** @enum {string} */
                     scope: "family" | "action";
-                    sessions: number;
+                    sessions: number | null;
                 }[];
                 segments: {
                     /** @enum {string} */
@@ -988,7 +1010,7 @@ export interface components {
                     label: string;
                     /** @enum {string} */
                     scope: "family" | "action";
-                    sessions: number;
+                    sessions: number | null;
                 }[];
             };
             /**
@@ -998,33 +1020,33 @@ export interface components {
             families: {
                 /** @enum {string} */
                 family: "goals" | "forms" | "outbound" | "downloads" | "errors" | "custom" | "instrumentation";
-                occurrences: number;
-                sessions: number;
+                occurrences: number | null;
+                sessions: number | null;
             }[];
             family_timeseries: {
                 /** Format: date */
                 date: string;
                 /** @enum {string} */
                 family: "goals" | "forms" | "outbound" | "downloads" | "errors" | "custom" | "instrumentation";
-                occurrences: number;
-                sessions: number;
+                occurrences: number | null;
+                sessions: number | null;
             }[];
             goals_configured: boolean;
             timeseries: {
                 /** Format: date */
                 date: string;
-                error_sessions: number;
-                instrumentation_sessions: number;
-                meaningful_action_sessions: number;
-                meaningful_occurrences: number;
-                total_sessions: number;
+                error_sessions: number | null;
+                instrumentation_sessions: number | null;
+                meaningful_action_sessions: number | null;
+                meaningful_occurrences: number | null;
+                total_sessions: number | null;
             }[];
             totals: {
-                error_sessions: number;
-                instrumentation_sessions: number;
-                meaningful_action_sessions: number;
-                meaningful_occurrences: number;
-                total_sessions: number;
+                error_sessions: number | null;
+                instrumentation_sessions: number | null;
+                meaningful_action_sessions: number | null;
+                meaningful_occurrences: number | null;
+                total_sessions: number | null;
             };
         };
         ActionsReportResponse: components["schemas"]["UserApiActionsEnvelope"] & {
@@ -1059,64 +1081,64 @@ export interface components {
             tenant_name?: string | null;
             /** @description Current routing slug for tenant breakdown rows. */
             tenant_slug?: string | null;
-            value: number;
+            value: number | null;
         };
         ContentFullCurrent: {
             entries?: {
                 bounce_rate: number | null;
-                entries: number;
+                entries: number | null;
                 page_title?: string | null;
                 path_canon: string | null;
             }[];
             exits?: {
                 exit_rate: number | null;
-                exits: number;
+                exits: number | null;
                 page_title?: string | null;
                 path_canon: string | null;
             }[];
             /** @enum {string} */
             include: "full";
             /**
-             * @description One measurement method selected from the current period and reused for comparison.
+             * @description The only Web Vitals measurement method served.
              * @enum {string}
              */
-            metric_method?: "legacy" | "web-vitals-6.2.3-cls1";
+            metric_method?: "web-vitals-6.2.3-cls1";
             pages: {
                 avg_page_eng_time_ms: number | null;
                 avg_scroll_depth?: number | null;
-                bounces: number;
-                entries: number;
+                bounces: number | null;
+                entries: number | null;
                 exit_rate: number | null;
-                exits: number;
+                exits: number | null;
                 page_bounce_rate: number | null;
                 page_title?: string | null;
-                pageviews: number;
+                pageviews: number | null;
                 path_canon: string | null;
                 performance?: {
-                    n_cls?: number;
-                    n_fcp?: number;
-                    n_inp?: number;
-                    n_lcp?: number;
-                    n_ttfb?: number;
+                    n_cls?: number | null;
+                    n_fcp?: number | null;
+                    n_inp?: number | null;
+                    n_lcp?: number | null;
+                    n_ttfb?: number | null;
                     p75_cls: number | null;
                     p75_fcp?: number | null;
                     p75_inp: number | null;
                     p75_lcp: number | null;
                     p75_ttfb: number | null;
-                    samples: number;
+                    samples: number | null;
                 } | null;
-                /** @description Derived from the published rounded counts only; it reveals nothing finer than them. */
+                /** @description Derived from the published counts only; it reveals nothing finer than them. */
                 share?: number | null;
-                unique_pageviews: number;
+                unique_pageviews: number | null;
             }[];
             timeseries: {
                 /** Format: date */
                 date: string;
-                pageviews: number;
+                pageviews: number | null;
                 path_canon: string;
-                /** @description Visible page paths only (not `(other)`). Derived from the published rounded counts only; it reveals nothing finer than them. */
+                /** @description Visible page paths only (not `(other)`). Derived from the published counts only; it reveals nothing finer than them. */
                 share?: number | null;
-                total_pageviews?: number;
+                total_pageviews?: number | null;
             }[];
             totals: components["schemas"]["ContentTotals"];
         };
@@ -1132,16 +1154,18 @@ export interface components {
             /** @enum {string} */
             include: "summary";
             /**
-             * @description Dense, strictly increasing UTC daily series. It contains exactly
-             *     one point per requested day, including zero-valued empty days. The
+             * @description Dense, strictly increasing daily series in the site's time zone. It
+             *     contains exactly one point per requested day, including zero-valued
+             *     empty days. The
              *     exact daily pageviews add up to the exact period total, but each
-             *     point and `totals.pageviews` are rounded independently: the sum of
-             *     the returned points can differ from `totals.pageviews`.
+             *     point and `totals.pageviews` are published independently: a count
+             *     from 1 to 9 is published as `null` (« < 10 »; zero stays `0`), so
+             *     the returned points cannot be added up; use `totals.pageviews`.
              */
             timeseries: {
                 /** Format: date */
                 date: string;
-                pageviews: number;
+                pageviews: number | null;
             }[];
             totals: components["schemas"]["ContentTotals"];
         };
@@ -1151,10 +1175,10 @@ export interface components {
         ContentTotals: {
             avg_page_eng_time_ms: number | null;
             bounce_rate: number | null;
-            entries: number;
+            entries: number | null;
             exit_rate: number | null;
-            pageviews: number;
-            unique_pageviews: number;
+            pageviews: number | null;
+            unique_pageviews: number | null;
         };
         ErrorBody: {
             /** @enum {string} */
@@ -1194,7 +1218,7 @@ export interface components {
          */
         GoalsConversionsCurrent: {
             goals: {
-                conversions: number;
+                conversions: number | null;
                 goal_id: string;
                 last_seen_at: string | null;
                 /**
@@ -1203,8 +1227,8 @@ export interface components {
                  * @enum {string}
                  */
                 reporting_status?: "available" | "suppressed_small_group" | "insufficient_population";
-                total_sessions: number;
-                unique_sessions: number;
+                total_sessions: number | null;
+                unique_sessions: number | null;
             }[];
         };
         GoalsConversionsEnvelope: {
@@ -1221,22 +1245,11 @@ export interface components {
             /** Format: uri */
             docs_url: string;
             org_id: string;
-            /**
-             * @deprecated
-             * @description Deprecated compatibility mirror of `product.runtime_plan_id`. The canonical product object is `product`. This field is retained for compatibility and must not be used by new integrations. It remains returned as a deprecated mirror; no sunset date has been announced.
-             * @enum {string}
-             */
-            plan_id: "free" | "starter" | "pro";
             product: components["schemas"]["WorkspaceProductConfiguration"];
             quotas: components["schemas"]["Quotas"];
             rate_limits: {
                 rps: number;
             };
-            /**
-             * @deprecated
-             * @description Deprecated compatibility mirror of `product.product_retention.api_retention_days`. This field is retained for compatibility and must not be used by new integrations. It remains returned as a deprecated mirror; no sunset date has been announced.
-             */
-            retention_days: number;
         };
         MeteredMeta: {
             billable_overage: boolean;
@@ -1255,33 +1268,47 @@ export interface components {
                 top_landing_pages: {
                     page_title?: string | null;
                     path_canon: string | null;
-                    sessions: number;
+                    sessions: number | null;
                 }[];
+                /**
+                 * @description Named sources, all visits: the domains of one service under
+                 *     its name, counted before the ten-visit threshold.
+                 */
+                top_referrer_sources: components["schemas"]["TopReferrerSource"][];
                 top_referrers: components["schemas"]["TopReferrer"][];
             };
             audience: {
                 browsers: {
                     browser_family: string;
-                    sessions: number;
+                    sessions: number | null;
+                }[];
+                /**
+                 * @description Cities of ten visits or more. The city is read alone: the list
+                 *     is empty with a hostname, client space, filter or segment.
+                 */
+                cities?: {
+                    city: string;
+                    country: string;
+                    sessions: number | null;
                 }[];
                 countries: {
                     country: string;
-                    sessions: number;
+                    sessions: number | null;
                 }[];
                 devices: {
                     avg_pages_per_session?: number | null;
                     avg_session_eng_time_ms?: number | null;
                     device_type: string;
-                    sessions: number;
+                    sessions: number | null;
                 }[];
                 os: {
                     os_family: string;
-                    sessions: number;
+                    sessions: number | null;
                 }[];
                 regions: {
                     country: string;
                     region: string;
-                    sessions: number;
+                    sessions: number | null;
                 }[];
             };
             content: {
@@ -1291,7 +1318,7 @@ export interface components {
                 };
                 top_pages: {
                     page_title?: string | null;
-                    pageviews: number;
+                    pageviews: number | null;
                     path_canon: string | null;
                 }[];
             };
@@ -1306,9 +1333,9 @@ export interface components {
                     /** Format: date */
                     date: string;
                     engagement_rate: number | null;
-                    pageviews: number;
-                    sessions: number;
-                    visitors: number;
+                    pageviews: number | null;
+                    sessions: number | null;
+                    visitors: number | null;
                 }[];
                 totals: {
                     avg_page_eng_time_ms: number | null;
@@ -1316,9 +1343,9 @@ export interface components {
                     avg_session_eng_time_ms: number | null;
                     bounce_rate: number | null;
                     engagement_rate: number | null;
-                    pageviews: number;
-                    sessions: number;
-                    visitors: number;
+                    pageviews: number | null;
+                    sessions: number | null;
+                    visitors: number | null;
                 };
                 /** @enum {string} */
                 visitors_mode: "sessions" | "daily_uniques";
@@ -1386,7 +1413,20 @@ export interface components {
             end: string;
             /** Format: date-time */
             start: string;
+            /**
+             * @description IANA time zone of the site, present when it is not UTC (absent:
+             *     UTC). The requested dates, the daily `date` values and the hourly
+             *     buckets follow it; `start` and `end` are the matching instants in
+             *     UTC.
+             */
+            timezone?: string;
         };
+        /**
+         * @description Type of referring site, read from the referring domain alone through
+         *     a fixed table. It never separates paid from organic.
+         * @enum {string}
+         */
+        ReferrerType: "search" | "social" | "messaging" | "ai_assistant" | "other";
         /**
          * @description Availability of a report for the requested period and its comparison
          *     period. `sections` lists the parts of the report that belong to the
@@ -1459,7 +1499,6 @@ export interface components {
             product_retention: components["schemas"]["ProductRetention"];
             /** @enum {string} */
             runtime_plan_id: "free" | "starter" | "pro";
-            technical_retention: components["schemas"]["TechnicalRetention"];
         };
         SitesResponse: {
             items: components["schemas"]["SiteItem"][];
@@ -1521,26 +1560,15 @@ export interface components {
             compareWindow: components["schemas"]["SurfaceCompareWindow"];
             dataFreshness: components["schemas"]["SurfaceDataFreshness"];
             exportCapability: components["schemas"]["SurfaceExportCapability"];
-            /** @description Analytics counts are exact from 10. Numeric 5 represents measured activity in the inclusive interval 1..9 and MUST be rendered as less than 10, never as five measured visits. Zero means a measured empty count. Detail rows under 10 visits are not published. The interval representative is not additive: use canonical period and daily totals, not sums of bins. Rates are published to the percent; 0.005 and 0.995 represent the open tails below 1% and above 99%. Rates, means, durations and percentiles are null under 10 contributors. Last conversion dates have day precision. Usage metering, billing, limits and diagnostics remain exact. This policy reduces detail; it is not a guarantee of anonymity. */
+            /** @description Analytics counts are exact from 10 and 0 is a measured empty count. A count of 1..9 is `null` in totals, list rows and time series points alike: render it as less than 10, never as a number. A field absent from a response was not measured. Totals are computed on exact values, then published by the same rule; never add up displayed values. A share is `null` for a row under 10 visits. A change (`delta`, `delta_pct`) is published only when both counts are, and `delta_pct` is a ratio (0.56 is +56%). Rates are published to the percent; 0.005 and 0.995 represent the open tails below 1% and above 99%. Rates, means, durations and percentiles are null under 10 contributors. Last conversion dates have day precision. Usage metering, billing, limits and diagnostics remain exact. This policy reduces detail; it is not a guarantee of anonymity. */
             reportingPrecision?: {
                 /** @enum {integer} */
-                countStep: 1;
+                minimumCount: 10;
                 /** @enum {number} */
                 rateStep: 0.01;
-                smallPositiveCount: {
-                    /** @enum {integer} */
-                    lower: 1;
-                    /** @enum {integer} */
-                    representative: 5;
-                    /** @enum {integer} */
-                    upper: 9;
-                };
                 /** @enum {string} */
-                version: "exact-counts-v1";
+                version: "exact-masked-counts-v1";
             };
-        };
-        TechnicalRetention: {
-            site_data_retention_months: number;
         };
         TenantItem: {
             /** @enum {string} */
@@ -1557,20 +1585,27 @@ export interface components {
         };
         TimeseriesPoint: {
             ts: string;
-            value: number;
+            value: number | null;
         };
         TimeseriesResponse: {
             availability: components["schemas"]["ReportAvailability"];
             meta: components["schemas"]["MeteredMeta"];
+            period_total: number | null;
             points: components["schemas"]["TimeseriesPoint"][];
         };
         TopReferrer: {
             domain: string;
             favicon_url?: string | null;
-            sessions: number;
+            sessions: number | null;
+        };
+        TopReferrerSource: {
+            favicon_url?: string | null;
+            sessions: number | null;
+            source: string;
+            type: components["schemas"]["ReferrerType"];
         };
         TopSource: {
-            sessions: number;
+            sessions: number | null;
             source: string;
         };
         UsageCurrentResponse: {
@@ -1607,25 +1642,25 @@ export interface components {
             by_day: {
                 /** Format: date */
                 date: string;
-                sessions: number;
+                sessions: number | null;
             }[];
             /** @description Campagnes option of the site. When `false`, the Campagnes sections are empty. */
             campaigns_enabled: boolean;
-            /** @description Visits with Campagnes consent in the period, rounded like the other counts. `0` when the option is off. */
-            consented_sessions: number;
+            /** @description Visits with Campagnes consent in the period, published like the other counts. `0` when the option is off. */
+            consented_sessions: number | null;
             /**
              * @description Visits with consent by campaign (Campagnes option, section
              *     `acquisition_attribution`); empty without the option.
              */
             top_campaigns: {
                 campaign: string;
-                sessions: number;
+                sessions: number | null;
             }[];
             /** @description Landing pages of the visits. */
             top_landing_pages: {
                 page_title?: string | null;
                 path_canon: string | null;
-                sessions: number;
+                sessions: number | null;
             }[];
             /**
              * @description Visits with consent by medium (Campagnes option, section
@@ -1633,7 +1668,7 @@ export interface components {
              */
             top_mediums: {
                 medium: string;
-                sessions: number;
+                sessions: number | null;
             }[];
             /** @description Referring domains of the visits. */
             top_referrers: components["schemas"]["TopReferrer"][];
@@ -1645,15 +1680,15 @@ export interface components {
             totals: {
                 avg_session_eng_time_ms: number | null;
                 engagement_rate: number | null;
-                pageviews: number;
-                sessions: number;
+                pageviews: number | null;
+                sessions: number | null;
             };
         };
         UserApiAcquisitionDetailsCurrent: {
             /** @description Campagnes option of the site. When `false`, the Campagnes sections are empty. */
             campaigns_enabled: boolean;
-            /** @description Visits with Campagnes consent in the period, rounded like the other counts. `0` when the option is off. */
-            consented_sessions: number;
+            /** @description Visits with Campagnes consent in the period, published like the other counts. `0` when the option is off. */
+            consented_sessions: number | null;
             dimensions: {
                 /** @description Computed on visits with consent (Campagnes option); empty without the option. */
                 campaigns: components["schemas"]["AcquisitionDimensionItem"][];
@@ -1661,6 +1696,11 @@ export interface components {
                 contents: components["schemas"]["AcquisitionDimensionItem"][];
                 /** @description Computed on visits with consent (Campagnes option); empty without the option. */
                 mediums: components["schemas"]["AcquisitionDimensionItem"][];
+                /** @description Named sources, all visits: the domains of one service under its name, counted before the ten-visit threshold. */
+                referrer_sources: components["schemas"]["AcquisitionReferrerSourceItem"][];
+                /** @description Types of referring site, all visits: search engine, social network, messaging, AI assistant, other site. */
+                referrer_types: components["schemas"]["AcquisitionReferrerTypeItem"][];
+                /** @description Referring domains, all visits. */
                 referrers: components["schemas"]["AcquisitionDimensionItem"][];
                 /** @description Computed on visits with consent (Campagnes option); empty without the option. */
                 sources: components["schemas"]["AcquisitionDimensionItem"][];
@@ -1695,21 +1735,21 @@ export interface components {
                 channel: "Direct" | "Search" | "Referral" | "Social" | "Email" | "Paid" | "Other";
                 /** Format: date */
                 date: string;
-                sessions: number;
+                sessions: number | null;
             }[];
             /**
              * @description Visits with consent by channel (Campagnes option, section
              *     `acquisition_attribution`); empty without the option.
              */
             channels: components["schemas"]["AcquisitionSummaryChannelItem"][];
-            /** @description Visits with Campagnes consent in the period, rounded like the other counts. `0` when the option is off. */
-            consented_sessions: number;
+            /** @description Visits with Campagnes consent in the period, published like the other counts. `0` when the option is off. */
+            consented_sessions: number | null;
             coverage: components["schemas"]["AcquisitionCoverage"];
             goals_configured: boolean;
             mix_timeseries: {
                 /** Format: date */
                 date: string;
-                sessions: number;
+                sessions: number | null;
             }[];
             totals: components["schemas"]["AcquisitionSummaryTotals"];
         };
@@ -1741,12 +1781,12 @@ export interface components {
             form_id?: string;
         };
         UserApiMoverItem: {
-            current_pageviews: number;
-            delta: number;
-            delta_pct: number;
+            current_pageviews: number | null;
+            delta: number | null;
+            delta_pct: number | null;
             page_title?: string | null;
             path_canon: string | null;
-            previous_pageviews: number;
+            previous_pageviews: number | null;
         };
         UserApiOverviewEnvelope: {
             availability: components["schemas"]["ReportAvailability"];
@@ -1802,7 +1842,7 @@ export interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
-        /** @description Request parameters are invalid. */
+        /** @description Request parameters are invalid, or the result is below the minimum reporting cohort (`REPORTING_THRESHOLD`, no `details`). */
         InvalidParams: {
             headers: {
                 "X-Request-Id": components["headers"]["XRequestId"];
@@ -1873,21 +1913,21 @@ export interface components {
         /** @description Compare current range against the previous equivalent period. */
         CompareParam: "prev_period";
         /**
-         * @description Content response depth. `summary` returns totals and one global UTC
-         *     pageview point per day; `limit` has no effect. `full` returns the
-         *     detailed Content report. `details` is a deprecated alias for `full`.
+         * @description Content response depth. `summary` returns totals and one global
+         *     pageview point per day of the site's time zone; `limit` has no effect. `full` returns the
+         *     detailed Content report.
          *     When omitted, ranges up to 90 days use `full`; ranges from 91 through
          *     365 days use `summary`.
          */
-        ContentInclude: "summary" | "full" | "details";
+        ContentInclude: "summary" | "full";
         /**
          * @description JSON object serialized as string, example:
          *     `{"device":"mobile","referrer":"google.com"}`.
          */
         Filters: string;
-        /** @description Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period. */
+        /** @description Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period. */
         FromDate: string;
-        /** @description Granularity (`hour` can require higher plan). */
+        /** @description Granularity (`day` or `hour`, on every plan with API access). */
         Interval: "day" | "hour";
         /**
          * @description Metric to aggregate (default `pageviews`). `sessions` uses the same
@@ -1909,7 +1949,7 @@ export interface components {
          *     `tenant_id` identifies one tenant.
          */
         TenantId: string;
-        /** @description Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today. */
+        /** @description Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today. */
         ToDate: string;
         /** @description Traffic segment to include. */
         TrafficParam: "humans" | "humans_including_ai" | "bots_only" | "ai_bots_only" | "all";

@@ -46,7 +46,7 @@ const variants = {
     current: {
       campaigns_enabled: false, consented_sessions: 0,
       goals_configured: false,
-      dimensions: { sources: [], mediums: [], campaigns: [], contents: [], terms: [], referrers: [] },
+      dimensions: { sources: [], mediums: [], campaigns: [], contents: [], terms: [], referrers: [], referrer_sources: [], referrer_types: [] },
       landing_pages: [],
     },
   } satisfies components['schemas']['AcquisitionDetailsReportResponse'],

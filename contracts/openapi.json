@@ -108,15 +108,14 @@
         }
       },
       "ContentInclude": {
-        "description": "Content response depth. `summary` returns totals and one global UTC\npageview point per day; `limit` has no effect. `full` returns the\ndetailed Content report. `details` is a deprecated alias for `full`.\nWhen omitted, ranges up to 90 days use `full`; ranges from 91 through\n365 days use `summary`.\n",
+        "description": "Content response depth. `summary` returns totals and one global\npageview point per day of the site's time zone; `limit` has no effect. `full` returns the\ndetailed Content report.\nWhen omitted, ranges up to 90 days use `full`; ranges from 91 through\n365 days use `summary`.\n",
         "in": "query",
         "name": "include",
         "required": false,
         "schema": {
           "enum": [
             "summary",
-            "full",
-            "details"
+            "full"
           ],
           "type": "string"
         }
@@ -131,7 +130,7 @@
         }
       },
       "FromDate": {
-        "description": "Inclusive UTC start date (YYYY-MM-DD). Pass explicit from and to dates to bound the requested period.",
+        "description": "Inclusive start date (YYYY-MM-DD), a day of the site's time zone (a UTC date for usage history). Pass explicit from and to dates to bound the requested period.",
         "in": "query",
         "name": "from",
         "required": false,
@@ -141,7 +140,7 @@
         }
       },
       "Interval": {
-        "description": "Granularity (`hour` can require higher plan).",
+        "description": "Granularity (`day` or `hour`, on every plan with API access).",
         "in": "query",
         "name": "interval",
         "required": false,
@@ -220,7 +219,7 @@
         }
       },
       "ToDate": {
-        "description": "Inclusive UTC end date (`YYYY-MM-DD`). Defaults to today.",
+        "description": "Inclusive end date (`YYYY-MM-DD`), a day of the site's time zone (a UTC date for usage history). Defaults to today.",
         "in": "query",
         "name": "to",
         "required": false,
@@ -310,7 +309,7 @@
             }
           }
         },
-        "description": "Request parameters are invalid.",
+        "description": "Request parameters are invalid, or the result is below the minimum reporting cohort (`REPORTING_THRESHOLD`, no `details`).\n",
         "headers": {
           "X-Request-Id": {
             "$ref": "#/components/headers/XRequestId"
@@ -388,6 +387,7 @@
             "type": "string"
           },
           "sessions": {
+            "nullable": true,
             "type": "number"
           }
         },
@@ -401,6 +401,7 @@
         "description": "Visits with and without a referring domain. A direct visit has no\nreferring domain.\n",
         "properties": {
           "direct_sessions": {
+            "nullable": true,
             "type": "number"
           },
           "direct_share": {
@@ -408,6 +409,7 @@
             "type": "number"
           },
           "non_direct_sessions": {
+            "nullable": true,
             "type": "number"
           },
           "non_direct_share": {
@@ -453,6 +455,7 @@
       "AcquisitionDimensionImpactItem": {
         "properties": {
           "converted_sessions": {
+            "nullable": true,
             "type": "number"
           },
           "session_conversion_rate": {
@@ -541,6 +544,7 @@
                   "type": "string"
                 },
                 "converted_sessions": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "session_conversion_rate": {
@@ -561,6 +565,7 @@
             "items": {
               "properties": {
                 "converted_sessions": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "path_canon": {
@@ -631,6 +636,56 @@
             "type": "object"
           }
         ]
+      },
+      "AcquisitionReferrerSourceItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AcquisitionDimensionItem"
+          },
+          {
+            "properties": {
+              "domains": {
+                "items": {
+                  "$ref": "#/components/schemas/AcquisitionDimensionItem"
+                },
+                "type": "array"
+              },
+              "type": {
+                "$ref": "#/components/schemas/ReferrerType"
+              }
+            },
+            "required": [
+              "type",
+              "domains"
+            ],
+            "type": "object"
+          }
+        ],
+        "description": "A named source of the provenance, all visits. `domains` lists its\ndomains of ten visits or more; the rest of the source is its other\ndomains.\n"
+      },
+      "AcquisitionReferrerTypeItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AcquisitionSummaryTotals"
+          },
+          {
+            "properties": {
+              "share": {
+                "nullable": true,
+                "type": "number"
+              },
+              "value": {
+                "$ref": "#/components/schemas/ReferrerType"
+              }
+            },
+            "required": [
+              "value",
+              "share"
+            ],
+            "type": "object"
+          }
+        ],
+        "description": "Visits by type of referring site, all visits."
       },
       "AcquisitionReportResponse": {
         "description": "Source response variants selected by the effective Acquisition include mode. Current and comparison use the same shape; availability and metering remain present in every variant.",
@@ -710,6 +765,7 @@
             "type": "number"
           },
           "sessions": {
+            "nullable": true,
             "type": "number"
           }
         },
@@ -770,13 +826,15 @@
                   "type": "string"
                 },
                 "occurrences": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "sessions": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "share": {
-                  "description": "Derived from the published rounded counts only; it reveals nothing finer than them.",
+                  "description": "Derived from the published counts only; it reveals nothing finer than them.",
                   "nullable": true,
                   "type": "number"
                 },
@@ -827,6 +885,7 @@
                       "type": "string"
                     },
                     "sessions": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
@@ -860,6 +919,7 @@
                       "type": "string"
                     },
                     "sessions": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
@@ -897,9 +957,11 @@
                   "type": "string"
                 },
                 "occurrences": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -932,9 +994,11 @@
                   "type": "string"
                 },
                 "occurrences": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -959,18 +1023,23 @@
                   "type": "string"
                 },
                 "error_sessions": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "instrumentation_sessions": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "meaningful_action_sessions": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "meaningful_occurrences": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "total_sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -989,18 +1058,23 @@
           "totals": {
             "properties": {
               "error_sessions": {
+                "nullable": true,
                 "type": "number"
               },
               "instrumentation_sessions": {
+                "nullable": true,
                 "type": "number"
               },
               "meaningful_action_sessions": {
+                "nullable": true,
                 "type": "number"
               },
               "meaningful_occurrences": {
+                "nullable": true,
                 "type": "number"
               },
               "total_sessions": {
+                "nullable": true,
                 "type": "number"
               }
             },
@@ -1127,6 +1201,7 @@
             "type": "string"
           },
           "value": {
+            "nullable": true,
             "type": "number"
           }
         },
@@ -1147,6 +1222,7 @@
                   "type": "number"
                 },
                 "entries": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "page_title": {
@@ -1175,6 +1251,7 @@
                   "type": "number"
                 },
                 "exits": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "page_title": {
@@ -1202,9 +1279,8 @@
             "type": "string"
           },
           "metric_method": {
-            "description": "One measurement method selected from the current period and reused for comparison.",
+            "description": "The only Web Vitals measurement method served.",
             "enum": [
-              "legacy",
               "web-vitals-6.2.3-cls1"
             ],
             "type": "string"
@@ -1221,9 +1297,11 @@
                   "type": "number"
                 },
                 "bounces": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "entries": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "exit_rate": {
@@ -1231,6 +1309,7 @@
                   "type": "number"
                 },
                 "exits": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "page_bounce_rate": {
@@ -1242,6 +1321,7 @@
                   "type": "string"
                 },
                 "pageviews": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "path_canon": {
@@ -1253,22 +1333,27 @@
                   "properties": {
                     "n_cls": {
                       "minimum": 0,
+                      "nullable": true,
                       "type": "integer"
                     },
                     "n_fcp": {
                       "minimum": 0,
+                      "nullable": true,
                       "type": "integer"
                     },
                     "n_inp": {
                       "minimum": 0,
+                      "nullable": true,
                       "type": "integer"
                     },
                     "n_lcp": {
                       "minimum": 0,
+                      "nullable": true,
                       "type": "integer"
                     },
                     "n_ttfb": {
                       "minimum": 0,
+                      "nullable": true,
                       "type": "integer"
                     },
                     "p75_cls": {
@@ -1292,6 +1377,7 @@
                       "type": "number"
                     },
                     "samples": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
@@ -1305,11 +1391,12 @@
                   "type": "object"
                 },
                 "share": {
-                  "description": "Derived from the published rounded counts only; it reveals nothing finer than them.",
+                  "description": "Derived from the published counts only; it reveals nothing finer than them.",
                   "nullable": true,
                   "type": "number"
                 },
                 "unique_pageviews": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -1336,17 +1423,19 @@
                   "type": "string"
                 },
                 "pageviews": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "path_canon": {
                   "type": "string"
                 },
                 "share": {
-                  "description": "Visible page paths only (not `(other)`). Derived from the published rounded counts only; it reveals nothing finer than them.",
+                  "description": "Visible page paths only (not `(other)`). Derived from the published counts only; it reveals nothing finer than them.",
                   "nullable": true,
                   "type": "number"
                 },
                 "total_pageviews": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -1410,7 +1499,7 @@
             "type": "string"
           },
           "timeseries": {
-            "description": "Dense, strictly increasing UTC daily series. It contains exactly\none point per requested day, including zero-valued empty days. The\nexact daily pageviews add up to the exact period total, but each\npoint and `totals.pageviews` are rounded independently: the sum of\nthe returned points can differ from `totals.pageviews`.\n",
+            "description": "Dense, strictly increasing daily series in the site's time zone. It\ncontains exactly one point per requested day, including zero-valued\nempty days. The\nexact daily pageviews add up to the exact period total, but each\npoint and `totals.pageviews` are published independently: a count\nfrom 1 to 9 is published as `null` (« < 10 »; zero stays `0`), so\nthe returned points cannot be added up; use `totals.pageviews`.\n",
             "items": {
               "additionalProperties": false,
               "properties": {
@@ -1419,6 +1508,7 @@
                   "type": "string"
                 },
                 "pageviews": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -1470,6 +1560,7 @@
             "type": "number"
           },
           "entries": {
+            "nullable": true,
             "type": "number"
           },
           "exit_rate": {
@@ -1477,9 +1568,11 @@
             "type": "number"
           },
           "pageviews": {
+            "nullable": true,
             "type": "number"
           },
           "unique_pageviews": {
+            "nullable": true,
             "type": "number"
           }
         },
@@ -1623,6 +1716,7 @@
             "items": {
               "properties": {
                 "conversions": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "goal_id": {
@@ -1642,9 +1736,11 @@
                   "type": "string"
                 },
                 "total_sessions": {
+                  "nullable": true,
                   "type": "number"
                 },
                 "unique_sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -1728,16 +1824,6 @@
           "org_id": {
             "type": "string"
           },
-          "plan_id": {
-            "deprecated": true,
-            "description": "Deprecated compatibility mirror of `product.runtime_plan_id`. The canonical product object is `product`. This field is retained for compatibility and must not be used by new integrations. It remains returned as a deprecated mirror; no sunset date has been announced.\n",
-            "enum": [
-              "free",
-              "starter",
-              "pro"
-            ],
-            "type": "string"
-          },
           "product": {
             "$ref": "#/components/schemas/WorkspaceProductConfiguration"
           },
@@ -1754,17 +1840,10 @@
               "rps"
             ],
             "type": "object"
-          },
-          "retention_days": {
-            "deprecated": true,
-            "description": "Deprecated compatibility mirror of `product.product_retention.api_retention_days`. This field is retained for compatibility and must not be used by new integrations. It remains returned as a deprecated mirror; no sunset date has been announced.\n",
-            "type": "integer"
           }
         },
         "required": [
           "org_id",
-          "plan_id",
-          "retention_days",
           "quotas",
           "rate_limits",
           "docs_url",
@@ -1821,6 +1900,7 @@
                       "type": "string"
                     },
                     "sessions": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
@@ -1829,6 +1909,13 @@
                     "sessions"
                   ],
                   "type": "object"
+                },
+                "type": "array"
+              },
+              "top_referrer_sources": {
+                "description": "Named sources, all visits: the domains of one service under\nits name, counted before the ten-visit threshold.\n",
+                "items": {
+                  "$ref": "#/components/schemas/TopReferrerSource"
                 },
                 "type": "array"
               },
@@ -1842,6 +1929,7 @@
             "required": [
               "by_channel",
               "top_referrers",
+              "top_referrer_sources",
               "top_landing_pages"
             ],
             "type": "object"
@@ -1855,11 +1943,36 @@
                       "type": "string"
                     },
                     "sessions": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
                   "required": [
                     "browser_family",
+                    "sessions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "cities": {
+                "description": "Cities of ten visits or more. The city is read alone: the list\nis empty with a hostname, client space, filter or segment.\n",
+                "items": {
+                  "properties": {
+                    "city": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "sessions": {
+                      "nullable": true,
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "city",
+                    "country",
                     "sessions"
                   ],
                   "type": "object"
@@ -1873,6 +1986,7 @@
                       "type": "string"
                     },
                     "sessions": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
@@ -1899,6 +2013,7 @@
                       "type": "string"
                     },
                     "sessions": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
@@ -1917,6 +2032,7 @@
                       "type": "string"
                     },
                     "sessions": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
@@ -1938,6 +2054,7 @@
                       "type": "string"
                     },
                     "sessions": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
@@ -1991,6 +2108,7 @@
                       "type": "string"
                     },
                     "pageviews": {
+                      "nullable": true,
                       "type": "number"
                     },
                     "path_canon": {
@@ -2051,12 +2169,15 @@
                       "type": "number"
                     },
                     "pageviews": {
+                      "nullable": true,
                       "type": "number"
                     },
                     "sessions": {
+                      "nullable": true,
                       "type": "number"
                     },
                     "visitors": {
+                      "nullable": true,
                       "type": "number"
                     }
                   },
@@ -2097,12 +2218,15 @@
                     "type": "number"
                   },
                   "pageviews": {
+                    "nullable": true,
                     "type": "number"
                   },
                   "sessions": {
+                    "nullable": true,
                     "type": "number"
                   },
                   "visitors": {
+                    "nullable": true,
                     "type": "number"
                   }
                 },
@@ -2403,6 +2527,10 @@
           "start": {
             "format": "date-time",
             "type": "string"
+          },
+          "timezone": {
+            "description": "IANA time zone of the site, present when it is not UTC (absent:\nUTC). The requested dates, the daily `date` values and the hourly\nbuckets follow it; `start` and `end` are the matching instants in\nUTC.\n",
+            "type": "string"
           }
         },
         "required": [
@@ -2412,6 +2540,17 @@
           "compare_end"
         ],
         "type": "object"
+      },
+      "ReferrerType": {
+        "description": "Type of referring site, read from the referring domain alone through\na fixed table. It never separates paid from organic.\n",
+        "enum": [
+          "search",
+          "social",
+          "messaging",
+          "ai_assistant",
+          "other"
+        ],
+        "type": "string"
       },
       "ReportAvailability": {
         "description": "Availability of a report for the requested period and its comparison\nperiod. `sections` lists the parts of the report that belong to the\nCampagnes option; each one is reported with the reason\n`campaigns_option_required` while the option is off.\n",
@@ -2616,16 +2755,12 @@
               "pro"
             ],
             "type": "string"
-          },
-          "technical_retention": {
-            "$ref": "#/components/schemas/TechnicalRetention"
           }
         },
         "required": [
           "runtime_plan_id",
           "campaigns_enabled",
           "product_retention",
-          "technical_retention",
           "api",
           "exports",
           "dashboard"
@@ -2796,11 +2931,11 @@
             "$ref": "#/components/schemas/SurfaceExportCapability"
           },
           "reportingPrecision": {
-            "description": "Analytics counts are exact from 10. Numeric 5 represents measured activity in the inclusive interval 1..9 and MUST be rendered as less than 10, never as five measured visits. Zero means a measured empty count. Detail rows under 10 visits are not published. The interval representative is not additive: use canonical period and daily totals, not sums of bins. Rates are published to the percent; 0.005 and 0.995 represent the open tails below 1% and above 99%. Rates, means, durations and percentiles are null under 10 contributors. Last conversion dates have day precision. Usage metering, billing, limits and diagnostics remain exact. This policy reduces detail; it is not a guarantee of anonymity.",
+            "description": "Analytics counts are exact from 10 and 0 is a measured empty count. A count of 1..9 is `null` in totals, list rows and time series points alike: render it as less than 10, never as a number. A field absent from a response was not measured. Totals are computed on exact values, then published by the same rule; never add up displayed values. A share is `null` for a row under 10 visits. A change (`delta`, `delta_pct`) is published only when both counts are, and `delta_pct` is a ratio (0.56 is +56%). Rates are published to the percent; 0.005 and 0.995 represent the open tails below 1% and above 99%. Rates, means, durations and percentiles are null under 10 contributors. Last conversion dates have day precision. Usage metering, billing, limits and diagnostics remain exact. This policy reduces detail; it is not a guarantee of anonymity.",
             "properties": {
-              "countStep": {
+              "minimumCount": {
                 "enum": [
-                  1
+                  10
                 ],
                 "type": "integer"
               },
@@ -2810,45 +2945,16 @@
                 ],
                 "type": "number"
               },
-              "smallPositiveCount": {
-                "properties": {
-                  "lower": {
-                    "enum": [
-                      1
-                    ],
-                    "type": "integer"
-                  },
-                  "representative": {
-                    "enum": [
-                      5
-                    ],
-                    "type": "integer"
-                  },
-                  "upper": {
-                    "enum": [
-                      9
-                    ],
-                    "type": "integer"
-                  }
-                },
-                "required": [
-                  "lower",
-                  "upper",
-                  "representative"
-                ],
-                "type": "object"
-              },
               "version": {
                 "enum": [
-                  "exact-counts-v1"
+                  "exact-masked-counts-v1"
                 ],
                 "type": "string"
               }
             },
             "required": [
               "version",
-              "countStep",
-              "smallPositiveCount",
+              "minimumCount",
               "rateStep"
             ],
             "type": "object"
@@ -2858,17 +2964,6 @@
           "dataFreshness",
           "compareWindow",
           "exportCapability"
-        ],
-        "type": "object"
-      },
-      "TechnicalRetention": {
-        "properties": {
-          "site_data_retention_months": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "site_data_retention_months"
         ],
         "type": "object"
       },
@@ -2922,6 +3017,7 @@
             "type": "string"
           },
           "value": {
+            "nullable": true,
             "type": "number"
           }
         },
@@ -2939,6 +3035,10 @@
           "meta": {
             "$ref": "#/components/schemas/MeteredMeta"
           },
+          "period_total": {
+            "nullable": true,
+            "type": "number"
+          },
           "points": {
             "items": {
               "$ref": "#/components/schemas/TimeseriesPoint"
@@ -2948,6 +3048,7 @@
         },
         "required": [
           "points",
+          "period_total",
           "availability",
           "meta"
         ],
@@ -2963,6 +3064,7 @@
             "type": "string"
           },
           "sessions": {
+            "nullable": true,
             "type": "number"
           }
         },
@@ -2972,9 +3074,34 @@
         ],
         "type": "object"
       },
+      "TopReferrerSource": {
+        "properties": {
+          "favicon_url": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sessions": {
+            "nullable": true,
+            "type": "number"
+          },
+          "source": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ReferrerType"
+          }
+        },
+        "required": [
+          "source",
+          "type",
+          "sessions"
+        ],
+        "type": "object"
+      },
       "TopSource": {
         "properties": {
           "sessions": {
+            "nullable": true,
             "type": "number"
           },
           "source": {
@@ -3100,6 +3227,7 @@
                   "type": "string"
                 },
                 "sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -3116,7 +3244,8 @@
             "type": "boolean"
           },
           "consented_sessions": {
-            "description": "Visits with Campagnes consent in the period, rounded like the other counts. `0` when the option is off.\n",
+            "description": "Visits with Campagnes consent in the period, published like the other counts. `0` when the option is off.\n",
+            "nullable": true,
             "type": "number"
           },
           "top_campaigns": {
@@ -3127,6 +3256,7 @@
                   "type": "string"
                 },
                 "sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -3151,6 +3281,7 @@
                   "type": "string"
                 },
                 "sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -3170,6 +3301,7 @@
                   "type": "string"
                 },
                 "sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -3206,9 +3338,11 @@
                 "type": "number"
               },
               "pageviews": {
+                "nullable": true,
                 "type": "number"
               },
               "sessions": {
+                "nullable": true,
                 "type": "number"
               }
             },
@@ -3242,7 +3376,8 @@
             "type": "boolean"
           },
           "consented_sessions": {
-            "description": "Visits with Campagnes consent in the period, rounded like the other counts. `0` when the option is off.\n",
+            "description": "Visits with Campagnes consent in the period, published like the other counts. `0` when the option is off.\n",
+            "nullable": true,
             "type": "number"
           },
           "dimensions": {
@@ -3268,7 +3403,22 @@
                 },
                 "type": "array"
               },
+              "referrer_sources": {
+                "description": "Named sources, all visits: the domains of one service under its name, counted before the ten-visit threshold.\n",
+                "items": {
+                  "$ref": "#/components/schemas/AcquisitionReferrerSourceItem"
+                },
+                "type": "array"
+              },
+              "referrer_types": {
+                "description": "Types of referring site, all visits: search engine, social network, messaging, AI assistant, other site.\n",
+                "items": {
+                  "$ref": "#/components/schemas/AcquisitionReferrerTypeItem"
+                },
+                "type": "array"
+              },
               "referrers": {
+                "description": "Referring domains, all visits.",
                 "items": {
                   "$ref": "#/components/schemas/AcquisitionDimensionItem"
                 },
@@ -3295,7 +3445,9 @@
               "campaigns",
               "contents",
               "terms",
-              "referrers"
+              "referrers",
+              "referrer_sources",
+              "referrer_types"
             ],
             "type": "object"
           },
@@ -3408,6 +3560,7 @@
                   "type": "string"
                 },
                 "sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -3428,7 +3581,8 @@
             "type": "array"
           },
           "consented_sessions": {
-            "description": "Visits with Campagnes consent in the period, rounded like the other counts. `0` when the option is off.\n",
+            "description": "Visits with Campagnes consent in the period, published like the other counts. `0` when the option is off.\n",
+            "nullable": true,
             "type": "number"
           },
           "coverage": {
@@ -3445,6 +3599,7 @@
                   "type": "string"
                 },
                 "sessions": {
+                  "nullable": true,
                   "type": "number"
                 }
               },
@@ -3601,12 +3756,15 @@
       "UserApiMoverItem": {
         "properties": {
           "current_pageviews": {
+            "nullable": true,
             "type": "number"
           },
           "delta": {
+            "nullable": true,
             "type": "number"
           },
           "delta_pct": {
+            "nullable": true,
             "type": "number"
           },
           "page_title": {
@@ -3618,6 +3776,7 @@
             "type": "string"
           },
           "previous_pageviews": {
+            "nullable": true,
             "type": "number"
           }
         },
@@ -4079,7 +4238,7 @@
     },
     "/v1/reports/acquisition": {
       "get": {
-        "description": "Referring domains and landing pages of the visits. A direct visit has\nno referring domain. Channels, sources, mediums, campaigns and impact by\nsource belong to the Campagnes option: `by_channel`, `channels`,\n`channel_timeseries`, `top_sources`, `top_mediums`, `top_campaigns` and\nthe `dimensions` and `impact` source lists are computed on visits whose\nvisitor gave consent, with the usual reporting precision (rounded\ncounts, `< 10`, rows under 10 visits grouped, rates and means `null`\nunder 10 contributors), and are empty when the site does not have the\noption. `availability.sections` reports `acquisition_attribution` with\nthe status of the report when the option is on and with the reason\n`campaigns_option_required` when it is off. `avg_pages_per_session`,\n`avg_session_eng_time_ms` and `avg_page_eng_time_ms` are `null` when\nfewer than ten visits contribute; they are never published as `0` in\nthat case.\nWhen report include selection is enabled, `include` selects the response\ndepth and omission selects `summary`. Otherwise, `include` is ignored\nand the handler uses `full`.\n`include=summary` returns totals, coverage and the sessions timeseries.\n`full` returns `current.by_day` and top lists. `details` returns\ndimensions, landing pages and optional goal impact; it is a distinct\nAcquisition variant, not the Content alias for full.\n`goal_id` optionally selects one configured site goal for `details`\nimpact. Impact reports distinct converted visits and rates by landing\npage using first-pageview attribution; omission uses the union of the\nsite's configured goals.\n",
+        "description": "Provenance of every visit: referring domains, the named sources that\ngather them (google.fr and google.com under Google), the types of\nreferring site (search engine, social network, messaging, AI\nassistant, other site) and landing pages. A direct visit has no\nreferring domain. Sources and types are read through a fixed table;\nthey never separate paid from organic.\n\nChannels, campaign sources, mediums, campaigns and impact by source\nbelong to the Campagnes option: `by_channel`, `channels`,\n`channel_timeseries`, `top_sources`, `top_mediums`, `top_campaigns`,\n`dimensions.sources`, `dimensions.mediums`, `dimensions.campaigns`,\n`dimensions.contents`, `dimensions.terms` and `impact` (except\n`impact.landing_pages`) are computed on visits whose\nvisitor gave consent, with the usual reporting precision (exact\ncounts from 10, `< 10` below, rows under 10 visits grouped, rates and means `null`\nunder 10 contributors), and are empty when the site does not have the\noption. `availability.sections` reports `acquisition_attribution` with\nthe status of the report when the option is on and with the reason\n`campaigns_option_required` when it is off. `avg_pages_per_session`,\n`avg_session_eng_time_ms` and `avg_page_eng_time_ms` are `null` when\nfewer than ten visits contribute; they are never published as `0` in\nthat case.\nWhen report include selection is enabled, `include` selects the response\ndepth and omission selects `summary`. Otherwise, `include` is ignored\nand the handler uses `full`.\n`include=summary` returns totals, coverage and the sessions timeseries.\n`full` returns `current.by_day` and top lists. `details` returns\ndimensions, landing pages and optional goal impact; it is a distinct\nAcquisition variant, not the Content alias for full.\n`goal_id` optionally selects one configured site goal for `details`\nimpact. Impact reports distinct converted visits and rates by landing\npage using first-pageview attribution; omission uses the union of the\nsite's configured goals.\n",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestIdHeader"
@@ -4260,7 +4419,7 @@
     },
     "/v1/reports/content": {
       "get": {
-        "description": "`summary` supports 1-365 inclusive UTC days. `full` and its deprecated\n`details` alias support 1-90 days. Comparison supports at most 30 days\nin either mode. Responses are never truncated: if the serialized proxy\nresponse would exceed 5 MiB, the request returns HTTP 422 with\n`REPORT_RESPONSE_TOO_LARGE` and consumes zero metered units. Detailed\nexports beyond 90 days are not provided synchronously by this endpoint.\n",
+        "description": "`summary` supports 1-365 inclusive days of the site's time zone. `full` and its deprecated\n`details` alias support 1-90 days. Comparison supports at most 30 days\nin either mode. Responses are never truncated: if the serialized proxy\nresponse would exceed 5 MiB, the request returns HTTP 422 with\n`REPORT_RESPONSE_TOO_LARGE` and consumes zero metered units. Detailed\nexports beyond 90 days are not provided synchronously by this endpoint.\n",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestIdHeader"
