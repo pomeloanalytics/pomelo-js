@@ -26,7 +26,7 @@ test('contract rejects extra routes, non-GET operations, remote references and m
     assert.throws(() => verifyContract(changed, updatedManifest), pattern);
   };
   check((contract) => { contract.paths['/v1/unreviewed'] = { get: {} }; }, /reviewed public operations/);
-  check((contract) => { contract.paths['/v1/me'].post = {}; }, /GET only/);
+  check((contract) => { contract.paths['/v1/me'].post = {}; }, /GET and POST \/v1\/tenants only/);
   check((contract) => { contract.components.schemas.Unreviewed = { $ref: 'https://example.test/schema.json' }; }, /External references/);
   assert.throws(() => verifyContract(text, { ...manifest, operations: [] }), /Manifest operations/);
 });

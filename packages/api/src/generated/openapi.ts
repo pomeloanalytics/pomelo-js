@@ -180,7 +180,7 @@ export interface paths {
                     /**
                      * @description Grouping dimension for breakdown endpoint.
                      *     When `dimension=tenant`, rows are grouped by stable `tenant_id`. The
-                     *     statistics of a tenant are those of the page's client space. The
+                     *     statistics of a tenant are those of the page's tracked space. The
                      *     response also includes `tenant_slug` and `tenant_name` as display labels.
                      */
                     dimension?: components["parameters"]["BreakdownDimension"];
@@ -765,7 +765,65 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /**
+         * Register or update tenants of a site
+         * @description Requires the dedicated `tenants:write` scope, distinct from the read
+         *     scopes; a token restricted to some tenants cannot hold it.
+         *
+         *     Additive and idempotent. The listed tenants are created or updated;
+         *     tenants that are not listed are never changed. Sending the same body
+         *     again changes nothing (`unchanged`). A tenant is deactivated only by
+         *     an explicit `status: INACTIVE`. The whole body is validated before
+         *     the first write; a batch interrupted by a failure is resumed by
+         *     sending it again. At most 100 tenants per request: send larger
+         *     registries in several requests. A slug already used by another tenant
+         *     of the site is refused with `409 TENANT_SLUG_CONFLICT`. A tenant
+         *     changed by another write between the read and the write is refused with
+         *     `409 TENANT_CONFLICT`: nothing is overwritten, send the request again.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Optional idempotency/request correlation identifier. */
+                    "X-Request-Id"?: components["parameters"]["RequestIdHeader"];
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TenantsWriteRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-Pomelo-Usage-Warning": components["headers"]["XPomeloUsageWarning"];
+                        "X-Request-Id": components["headers"]["XRequestId"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TenantsWriteResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                /** @description `TENANT_SLUG_CONFLICT`: a slug is already used by another tenant of the site. `TENANT_CONFLICT`: a tenant was changed concurrently; send the request again. */
+                409: {
+                    headers: {
+                        "X-Request-Id": components["headers"]["XRequestId"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TenantConflictErrorResponse"];
+                    };
+                };
+                422: components["responses"]["InvalidParams"];
+                429: components["responses"]["RateLimited"];
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -783,6 +841,8 @@ export interface paths {
          * Current billing period usage
          * @description Requires `usage:read` scope. Tokens with `metrics:read` also
          *     have implicit access to this endpoint.
+         *     A token restricted to tenants (`allowed_tenant_ids`) is refused with
+         *     `403 FORBIDDEN`: it cannot read the organization's consumption.
          */
         get: {
             parameters: {
@@ -830,6 +890,8 @@ export interface paths {
          * Usage history by month
          * @description Requires `usage:read` scope. Tokens with `metrics:read` also
          *     have implicit access to this endpoint.
+         *     A token restricted to tenants (`allowed_tenant_ids`) is refused with
+         *     `403 FORBIDDEN`: it cannot read the organization's consumption.
          */
         get: {
             parameters: {
@@ -1067,6 +1129,15 @@ export interface components {
         BreakdownResponse: {
             availability: components["schemas"]["ReportAvailability"];
             meta: components["schemas"]["MeteredMeta"];
+            /**
+             * @description Values of ten visits or more, except the whole-site breakdowns
+             *     exact from 1. With a filter, a client space or a raw referrer, the
+             *     values under ten visits are grouped in one last row,
+             *     `key: "(other)"`, summed before the cut to `limit`; its `value` is
+             *     exact from 10 and `null` from 1 to 9, and the row is absent when
+             *     nothing is grouped. A client that reads the rows as entities must
+             *     skip it.
+             */
             rows: components["schemas"]["BreakdownRow"][];
         };
         BreakdownRow: {
@@ -1157,10 +1228,11 @@ export interface components {
              * @description Dense, strictly increasing daily series in the site's time zone. It
              *     contains exactly one point per requested day, including zero-valued
              *     empty days. The
-             *     exact daily pageviews add up to the exact period total, but each
-             *     point and `totals.pageviews` are published independently: a count
-             *     from 1 to 9 is published as `null` (« < 10 »; zero stays `0`), so
-             *     the returned points cannot be added up; use `totals.pageviews`.
+             *     exact daily pageviews add up to the exact period total. Without
+             *     any filter, each point and `totals.pageviews` are published
+             *     exactly from 1. With a filter, a count from 1 to 9 is published
+             *     as `null` (« < 10 »; zero stays `0`), so the returned points
+             *     cannot be added up; use `totals.pageviews`.
              */
             timeseries: {
                 /** Format: date */
@@ -1246,17 +1318,17 @@ export interface components {
             docs_url: string;
             org_id: string;
             product: components["schemas"]["WorkspaceProductConfiguration"];
-            quotas: components["schemas"]["Quotas"];
+            quotas?: components["schemas"]["Quotas"];
             rate_limits: {
                 rps: number;
             };
         };
         MeteredMeta: {
-            billable_overage: boolean;
+            billable_overage?: boolean;
             request_id: string;
             surface?: components["schemas"]["SurfaceMeta"];
             units_charged: number;
-            usage: components["schemas"]["UsageMeta"];
+            usage?: components["schemas"]["UsageMeta"];
         };
         OverviewCurrent: {
             acquisition: {
@@ -1272,39 +1344,80 @@ export interface components {
                 }[];
                 /**
                  * @description Named sources, all visits: the domains of one service under
-                 *     its name, counted before the ten-visit threshold.
+                 *     its name, counted before the ten-visit threshold. Outside the
+                 *     whole-site view the sources under ten visits are grouped in
+                 *     one last row, `source: "(other)"` of type `other`, counted as
+                 *     `audience.countries`.
                  */
                 top_referrer_sources: components["schemas"]["TopReferrerSource"][];
+                /**
+                 * @description Raw referring domains of ten visits or more. The domains under
+                 *     ten visits are grouped in one last row, `domain: "(other)"`;
+                 *     its `sessions` is exact from 10 and `null` from 1 to 9, and
+                 *     the row is absent when nothing is grouped.
+                 */
                 top_referrers: components["schemas"]["TopReferrer"][];
             };
             audience: {
+                /**
+                 * @description Browser families. Outside the whole-site view the families
+                 *     under ten visits are grouped in one last row,
+                 *     `browser_family: "(other)"`, counted as `countries`.
+                 */
                 browsers: {
                     browser_family: string;
                     sessions: number | null;
                 }[];
                 /**
-                 * @description Cities of ten visits or more. The city is read alone: the list
-                 *     is empty with a hostname, client space, filter or segment.
+                 * @description Cities of ten visits or more. The cities under ten visits are
+                 *     grouped in one last row, `city: "(other)"` and
+                 *     `country: "(other)"`; its `sessions` is exact from 10 and
+                 *     `null` from 1 to 9, and the row is absent when nothing is
+                 *     grouped. The city is read alone: the list is empty with a
+                 *     hostname, client space, filter or segment.
                  */
                 cities?: {
                     city: string;
                     country: string;
                     sessions: number | null;
                 }[];
+                /**
+                 * @description Countries of ten visits or more (exact from 1 on the whole
+                 *     site with no filter). Elsewhere the countries under ten visits
+                 *     are grouped in one last row, `country: "(other)"`; its
+                 *     `sessions` is exact from 10 and `null` from 1 to 9, and the row
+                 *     is absent when nothing is grouped.
+                 */
                 countries: {
                     country: string;
                     sessions: number | null;
                 }[];
+                /**
+                 * @description Device types. Outside the whole-site view the types under ten
+                 *     visits are grouped in one last row, `device_type: "(other)"`,
+                 *     counted as `countries`; its averages are `null`.
+                 */
                 devices: {
                     avg_pages_per_session?: number | null;
                     avg_session_eng_time_ms?: number | null;
                     device_type: string;
                     sessions: number | null;
                 }[];
+                /**
+                 * @description Operating system families. Outside the whole-site view the
+                 *     families under ten visits are grouped in one last row,
+                 *     `os_family: "(other)"`, counted as `countries`.
+                 */
                 os: {
                     os_family: string;
                     sessions: number | null;
                 }[];
+                /**
+                 * @description Regions of ten visits or more (exact from 1 on the whole site
+                 *     with no filter). Elsewhere the regions under ten visits are
+                 *     grouped in one last row, `region: "(other)"` and
+                 *     `country: "(other)"`, counted as `countries`.
+                 */
                 regions: {
                     country: string;
                     region: string;
@@ -1489,6 +1602,7 @@ export interface components {
             siteId: string;
             /** @enum {string} */
             status: "ACTIVE" | "SUSPENDED";
+            timezone: string;
         };
         SiteProductConfiguration: {
             api: components["schemas"]["ProductApi"];
@@ -1560,7 +1674,7 @@ export interface components {
             compareWindow: components["schemas"]["SurfaceCompareWindow"];
             dataFreshness: components["schemas"]["SurfaceDataFreshness"];
             exportCapability: components["schemas"]["SurfaceExportCapability"];
-            /** @description Analytics counts are exact from 10 and 0 is a measured empty count. A count of 1..9 is `null` in totals, list rows and time series points alike: render it as less than 10, never as a number. A field absent from a response was not measured. Totals are computed on exact values, then published by the same rule; never add up displayed values. A share is `null` for a row under 10 visits. A change (`delta`, `delta_pct`) is published only when both counts are, and `delta_pct` is a ratio (0.56 is +56%). Rates are published to the percent; 0.005 and 0.995 represent the open tails below 1% and above 99%. Rates, means, durations and percentiles are null under 10 contributors. Last conversion dates have day precision. Usage metering, billing, limits and diagnostics remain exact. This policy reduces detail; it is not a guarantee of anonymity. */
+            /** @description On the whole site, with no filter and no client space, these counts are exact from 1: the totals and the per-day series (visitors, visits, page views, events, and the `period_total` and points of a `day` series), the breakdowns by country, region, device, system, browser, language and screen size, the pages and entry pages, the named sources and the types of referring site, and the goals with their conversions. The cities (a list of those with at least ten visits), the raw referring domains, the `hour` series, every filtered or crossed report and the Campagnes sections publish counts exact from 10; a count of 1..9 is `null`: render it as less than 10, never as a number. 0 is a measured empty count. A filtered report keeps the complement rule. Totals are computed on exact values, then published by the same rule; never add up displayed values. A share follows its count: it is `null` when the count is. A change (`delta`, `delta_pct`) is published only when both counts are 0 or at least 10, and `delta_pct` is a ratio (0.56 is +56%). Rates are published to the percent; 0.005 and 0.995 represent the open tails below 1% and above 99%. Rates, means, durations and percentiles are null under 10 contributors. Last conversion dates have day precision. Usage metering, billing, limits and diagnostics remain exact. This policy reduces detail; it is not a guarantee of anonymity. */
             reportingPrecision?: {
                 /** @enum {integer} */
                 minimumCount: 10;
@@ -1569,6 +1683,18 @@ export interface components {
                 /** @enum {string} */
                 version: "exact-masked-counts-v1";
             };
+        };
+        TenantConflictErrorBody: {
+            /** @enum {string} */
+            code: "TENANT_SLUG_CONFLICT" | "TENANT_CONFLICT";
+            details?: {
+                [key: string]: unknown;
+            } | null;
+            message: string;
+            request_id: string;
+        };
+        TenantConflictErrorResponse: {
+            error: components["schemas"]["TenantConflictErrorBody"];
         };
         TenantItem: {
             /** @enum {string} */
@@ -1582,6 +1708,34 @@ export interface components {
         };
         TenantsResponse: {
             items: components["schemas"]["TenantItem"][];
+        };
+        TenantsWriteRequest: {
+            site_id: string;
+            tenants: components["schemas"]["TenantWriteItem"][];
+        };
+        TenantsWriteResponse: {
+            created: number;
+            items: components["schemas"]["TenantWriteResultItem"][];
+            unchanged: number;
+            updated: number;
+        };
+        TenantWriteItem: {
+            /**
+             * @description Omitted keeps the stored status (`ACTIVE` for a new tenant).
+             *     `INACTIVE` is the only way to deactivate a tenant.
+             * @enum {string}
+             */
+            status?: "ACTIVE" | "INACTIVE";
+            /** @description Stable tenant identifier chosen by the platform. */
+            tenant_id: string;
+            /** @description Display name. */
+            tenant_name: string;
+            /** @description Routing slug, unique within the site. */
+            tenant_slug: string;
+        };
+        TenantWriteResultItem: components["schemas"]["TenantItem"] & {
+            /** @enum {string} */
+            result: "created" | "updated" | "unchanged";
         };
         TimeseriesPoint: {
             ts: string;
@@ -1904,7 +2058,7 @@ export interface components {
         /**
          * @description Grouping dimension for breakdown endpoint.
          *     When `dimension=tenant`, rows are grouped by stable `tenant_id`. The
-         *     statistics of a tenant are those of the page's client space. The
+         *     statistics of a tenant are those of the page's tracked space. The
          *     response also includes `tenant_slug` and `tenant_name` as display labels.
          */
         BreakdownDimension: "device" | "referrer" | "page" | "browser" | "os" | "country" | "tenant";
@@ -1956,6 +2110,13 @@ export interface components {
     };
     requestBodies: never;
     headers: {
+        /**
+         * @description Present with the value `near_hard_cap` once the workspace has used 80 %
+         *     of its monthly API hard cap. Plan for the ceiling before requests are
+         *     refused with `HARD_CAP_REACHED`. Never sent to a token restricted to
+         *     tenants.
+         */
+        XPomeloUsageWarning: "near_hard_cap";
         /** @description Maximum requests allowed during current short window. */
         XRateLimitLimit: number;
         /** @description Remaining requests in current short window. */

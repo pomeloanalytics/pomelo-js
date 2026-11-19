@@ -88,6 +88,7 @@ The default timeout is 30 seconds and covers reading the response body.
 | `pomelo.me(options?)` | `/v1/me` |
 | `pomelo.sites.list(options?)` | `/v1/sites` |
 | `pomelo.tenants.list(params, options?)` | `/v1/tenants` |
+| `pomelo.tenants.write(body, options?)` | `POST /v1/tenants` |
 | `pomelo.metrics.timeseries(params, options?)` | `/v1/metrics/timeseries` |
 | `pomelo.metrics.breakdown(params, options?)` | `/v1/metrics/breakdown` |
 | `pomelo.reports.overview(params, options?)` | `/v1/reports/overview` |
@@ -98,6 +99,15 @@ The default timeout is 30 seconds and covers reading the response body.
 | `pomelo.goals.conversions(params, options?)` | `/v1/goals/conversions` |
 | `pomelo.usage.current(options?)` | `/v1/usage/current` |
 | `pomelo.usage.history(params?, options?)` | `/v1/usage/history` |
+
+`tenants.write` is the only operation that is not a GET. It needs a token with the
+dedicated `tenants:write` scope (never restricted to some tenants), takes the
+wire body (`{ site_id, tenants: [{ tenant_id, tenant_slug, tenant_name, status? }] }`,
+at most 100 tenants) and is additive and idempotent.
+
+A token restricted to followed workspaces does not see the organization's
+consumption: `/v1/me` has no `quotas`, and `meta.usage` and `meta.billable_overage`
+are absent from metered responses. Treat them as optional.
 
 Parameters use camelCase (`siteId`, `tenantId`, `actionFamily`, `actionKey`) and map
 to the API's exact wire names. Other names, such as `from`, `to`, `metric`, and
