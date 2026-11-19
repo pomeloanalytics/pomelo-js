@@ -17,8 +17,10 @@ export function verifyContract(text, manifest) {
   const operations = [];
   for (const [path, item] of Object.entries(source.paths)) {
     assert.ok(item.get, 'The initial public API client requires a GET operation for each path.');
-    for (const method of ['post', 'put', 'patch', 'delete', 'head', 'options', 'trace']) assert.ok(!(method in item), 'The initial public API client supports GET only.');
+    for (const method of ['put', 'patch', 'delete', 'head', 'options', 'trace']) assert.ok(!(method in item), 'The public API client supports GET and POST /v1/tenants only.');
+    assert.ok(!('post' in item) || path === '/v1/tenants', 'The public API client supports GET and POST /v1/tenants only.');
     operations.push(`get ${path}`);
+    if ('post' in item) operations.push(`post ${path}`);
   }
   assert.deepEqual(manifest.operations.map(({ method, path }) => `${method} ${path}`).sort(), operations.sort(), 'Manifest operations do not match the public contract.');
   function checkReferences(value) {

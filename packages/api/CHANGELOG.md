@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.0-beta.5
+
+- **Type break.** `quotas` of `/v1/me`, and `meta.usage` and `meta.billable_overage`
+  of metered responses, are now optional: an API token limited to followed
+  workspaces does not receive the organization's consumption. Narrow them
+  before use (`data.quotas?.used_units`). Unrestricted tokens still receive them.
+- Add `pomelo.tenants.write(body, options?)` for `POST /v1/tenants` (scope
+  `tenants:write`, never restricted to some tenants): additive, idempotent
+  registration of up to 100 tenants of a site. New types `TenantsWriteBody` and
+  `TenantsWriteData`; the body keeps wire field names.
+- The client sends one JSON POST for this operation; every other operation
+  remains a single GET.
+
 ## 0.1.0-beta.4
 
 - Sync the reviewed public contract for a single audience measurement and the

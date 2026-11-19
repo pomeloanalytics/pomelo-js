@@ -70,7 +70,16 @@ export class Transport {
     }
   }
 
-  async get<T>(path: string, query: Query, options: RequestOptions = {}): Promise<ApiResponse<T>> {
+  get<T>(path: string, query: Query, options: RequestOptions = {}): Promise<ApiResponse<T>> {
+    return this.#request<T>('GET', path, query, undefined, options);
+  }
+
+  /** Single JSON POST. Only used for the reviewed `POST /v1/tenants` operation. */
+  post<T>(path: string, body: object, options: RequestOptions = {}): Promise<ApiResponse<T>> {
+    return this.#request<T>('POST', path, {}, body, options);
+  }
+
+  async #request<T>(method: 'GET' | 'POST', path: string, query: Query, body: object | undefined, options: RequestOptions): Promise<ApiResponse<T>> {
     assertServer();
     if (!/^\/v1\/[a-z/]+$/.test(path) || (options.requestId !== undefined && !identifier.test(options.requestId))) {
       throw new PomeloTransportError('INVALID_OPTIONS');
@@ -85,6 +94,16 @@ export class Transport {
     const requestId = options.requestId ?? globalThis.crypto.randomUUID();
     const headers = new Headers({ Accept: 'application/json', Authorization: `Bearer ${this.#token}` });
     headers.set('X-Request-Id', requestId);
+    let serialized: string | undefined;
+    if (body !== undefined) {
+      try {
+        serialized = JSON.stringify(body);
+      } catch {
+        throw new PomeloTransportError('INVALID_OPTIONS');
+      }
+      if (typeof serialized !== 'string') throw new PomeloTransportError('INVALID_OPTIONS');
+      headers.set('Content-Type', 'application/json');
+    }
     const controller = new AbortController();
     let timedOut = false;
     const abort = (): void => controller.abort();
@@ -97,7 +116,7 @@ export class Transport {
       controller.signal.addEventListener('abort', abortRequest, { once: true });
     });
     try {
-      const response = await Promise.race([this.#fetch(url, { method: 'GET', headers, signal: controller.signal, redirect: 'error', credentials: 'omit', cache: 'no-store' }), aborted]);
+      const response = await Promise.race([this.#fetch(url, { method, headers, ...(serialized !== undefined ? { body: serialized } : {}), signal: controller.signal, redirect: 'error', credentials: 'omit', cache: 'no-store' }), aborted]);
       metadata = responseMetadata(response.headers, requestId);
       let payload: unknown;
       try {

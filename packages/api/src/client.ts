@@ -14,6 +14,9 @@ export type ApiParams<Path extends ApiPath> = [WireParams<Path>] extends [never]
 };
 
 export type TenantsParams = ApiParams<'/v1/tenants'>;
+/** Body of `POST /v1/tenants`: wire field names (`site_id`, `tenant_slug`, ...). */
+export type TenantsWriteBody = paths['/v1/tenants']['post']['requestBody']['content']['application/json'];
+export type TenantsWriteData = paths['/v1/tenants']['post']['responses'][200]['content']['application/json'];
 export type TimeseriesParams = ApiParams<'/v1/metrics/timeseries'>;
 export type BreakdownParams = ApiParams<'/v1/metrics/breakdown'>;
 export type OverviewParams = ApiParams<'/v1/reports/overview'>;
@@ -35,7 +38,7 @@ function wireQuery(params: object): Record<string, string | number | boolean | u
   return query;
 }
 
-/** Server-side API client. Each operation performs exactly one GET request. */
+/** Server-side API client. Each operation performs exactly one request: GET, except `tenants.write` (POST). */
 export class PomeloClient {
   readonly #transport: Transport;
 
@@ -54,6 +57,13 @@ export class PomeloClient {
   readonly tenants = {
     list: (params: TenantsParams, options?: RequestOptions): Promise<ApiResponse<ApiData<'/v1/tenants'>>> =>
       this.#transport.get('/v1/tenants', wireQuery(params), options),
+    /**
+     * Registers or updates tenants of a site (additive, idempotent). Requires a token
+     * with the `tenants:write` scope, which cannot be restricted to some tenants.
+     * The body keeps the wire field names of the public contract.
+     */
+    write: (body: TenantsWriteBody, options?: RequestOptions): Promise<ApiResponse<TenantsWriteData>> =>
+      this.#transport.post('/v1/tenants', body, options),
   };
 
   readonly metrics = {
