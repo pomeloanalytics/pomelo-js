@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0-beta.6
+
+- Add paginated lists. `reports.content`, `reports.acquisition` and
+  `metrics.breakdown` accept `list`, `listLimit`, `offset`, `sort`, `order` and
+  `search`; the page is `current.lists.<list>` (`rows`, `next_offset`,
+  `total_rows`, `totals`, `other`), or `page` on a breakdown. `other` is `null`
+  (under 10) when a hidden part of 1 to 9 is all that is left, never `0`.
+  Additive: without `list`, responses are unchanged.
+
 ## 0.1.0-beta.5
 
 - **Type break.** `quotas` of `/v1/me`, and `meta.usage` and `meta.billable_overage`

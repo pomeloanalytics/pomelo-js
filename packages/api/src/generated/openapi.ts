@@ -194,13 +194,44 @@ export interface paths {
                     /** @description Number of rows returned by breakdown endpoint. */
                     limit?: components["parameters"]["BreakdownLimit"];
                     /**
+                     * @description Reads the breakdown as the paginated list of its dimension (`device`:
+                     *     `devices`, `referrer`: `referrers`, `page`: `pages`, `browser`:
+                     *     `browsers`, `os`: `systems`, `country`: `countries`). Whole site, no
+                     *     `filters` and no `tenant_id`. `rows[].value` is the main measure of the
+                     *     list (pageviews for `pages`, visits for the others); a `metric` other
+                     *     than `pageviews` for `pages` or `sessions` for the others is refused and `page` carries `next_offset`, `total_rows`, `totals` and
+                     *     `other`.
+                     */
+                    list?: components["parameters"]["BreakdownListParam"];
+                    /**
+                     * @description Page size of `list`, when it is not `limit`. Without it `limit` is the
+                     *     page size (25 when `limit` is absent too); `offset + page size` is at
+                     *     most 10 000.
+                     */
+                    list_limit?: components["parameters"]["ListPageSize"];
+                    /**
                      * @description Metric to aggregate (default `pageviews`). `sessions` uses the same
                      *     visit model as the dashboard: a `visit_id` starts from the
                      *     privacy-preserving daily visitor key and is split after 30 minutes of
                      *     inactivity.
                      */
                     metric?: components["parameters"]["Metric"];
+                    /** @description Rank of the first row of the page of `list`. */
+                    offset?: components["parameters"]["ListOffset"];
+                    /** @description Order of `sort` (`desc` for a measure, `asc` for `value`). */
+                    order?: components["parameters"]["ListOrder"];
+                    /**
+                     * @description Rows of `list` whose value (path, domain, name) or title contains the
+                     *     text, case-insensitive, accents significant. A value under ten visits
+                     *     that the list hides is never found. `other` is null with a search.
+                     */
+                    search?: components["parameters"]["ListSearch"];
                     site_id: components["parameters"]["SiteId"];
+                    /**
+                     * @description Sort of `list`: one of its measures or `value` (alphabetical). The
+                     *     default is its main measure, descending, ties broken by the value.
+                     */
+                    sort?: components["parameters"]["ListSort"];
                     /**
                      * @description Stable tenant identifier. Use this for tenant-scoped analytics and
                      *     tenant-scoped access control. `site_id` identifies the shared product,
@@ -386,7 +417,37 @@ export interface paths {
                     include?: components["parameters"]["ReportInclude"];
                     /** @description Number of rows returned by top lists for report endpoints. */
                     limit?: components["parameters"]["ReportLimit"];
+                    /**
+                     * @description A list of the report read page by page (see Pagination). Content serves
+                     *     `pages`, `entry_pages` and `exit_pages`; Acquisition serves
+                     *     `landing_pages`, `referrers` and the Campagnes lists. The page is
+                     *     returned in `current.lists.<list>` next to the report, which keeps its
+                     *     own arrays. Needs `include=full` (the default when `list` is given);
+                     *     not served with a client space (`tenant_id`).
+                     */
+                    list?: components["parameters"]["ListParam"];
+                    /**
+                     * @description Page size of `list`, when it is not `limit`. Without it `limit` is the
+                     *     page size (25 when `limit` is absent too); `offset + page size` is at
+                     *     most 10 000.
+                     */
+                    list_limit?: components["parameters"]["ListPageSize"];
+                    /** @description Rank of the first row of the page of `list`. */
+                    offset?: components["parameters"]["ListOffset"];
+                    /** @description Order of `sort` (`desc` for a measure, `asc` for `value`). */
+                    order?: components["parameters"]["ListOrder"];
+                    /**
+                     * @description Rows of `list` whose value (path, domain, name) or title contains the
+                     *     text, case-insensitive, accents significant. A value under ten visits
+                     *     that the list hides is never found. `other` is null with a search.
+                     */
+                    search?: components["parameters"]["ListSearch"];
                     site_id: components["parameters"]["SiteId"];
+                    /**
+                     * @description Sort of `list`: one of its measures or `value` (alphabetical). The
+                     *     default is its main measure, descending, ties broken by the value.
+                     */
+                    sort?: components["parameters"]["ListSort"];
                     /**
                      * @description Stable tenant identifier. Use this for tenant-scoped analytics and
                      *     tenant-scoped access control. `site_id` identifies the shared product,
@@ -556,7 +617,37 @@ export interface paths {
                     include?: components["parameters"]["ContentInclude"];
                     /** @description Number of rows returned by top lists for report endpoints. */
                     limit?: components["parameters"]["ReportLimit"];
+                    /**
+                     * @description A list of the report read page by page (see Pagination). Content serves
+                     *     `pages`, `entry_pages` and `exit_pages`; Acquisition serves
+                     *     `landing_pages`, `referrers` and the Campagnes lists. The page is
+                     *     returned in `current.lists.<list>` next to the report, which keeps its
+                     *     own arrays. Needs `include=full` (the default when `list` is given);
+                     *     not served with a client space (`tenant_id`).
+                     */
+                    list?: components["parameters"]["ListParam"];
+                    /**
+                     * @description Page size of `list`, when it is not `limit`. Without it `limit` is the
+                     *     page size (25 when `limit` is absent too); `offset + page size` is at
+                     *     most 10 000.
+                     */
+                    list_limit?: components["parameters"]["ListPageSize"];
+                    /** @description Rank of the first row of the page of `list`. */
+                    offset?: components["parameters"]["ListOffset"];
+                    /** @description Order of `sort` (`desc` for a measure, `asc` for `value`). */
+                    order?: components["parameters"]["ListOrder"];
+                    /**
+                     * @description Rows of `list` whose value (path, domain, name) or title contains the
+                     *     text, case-insensitive, accents significant. A value under ten visits
+                     *     that the list hides is never found. `other` is null with a search.
+                     */
+                    search?: components["parameters"]["ListSearch"];
                     site_id: components["parameters"]["SiteId"];
+                    /**
+                     * @description Sort of `list`: one of its measures or `value` (alphabetical). The
+                     *     default is its main measure, descending, ties broken by the value.
+                     */
+                    sort?: components["parameters"]["ListSort"];
                     /**
                      * @description Stable tenant identifier. Use this for tenant-scoped analytics and
                      *     tenant-scoped access control. `site_id` identifies the shared product,
@@ -1129,6 +1220,7 @@ export interface components {
         BreakdownResponse: {
             availability: components["schemas"]["ReportAvailability"];
             meta: components["schemas"]["MeteredMeta"];
+            page?: components["schemas"]["ReportListPaging"];
             /**
              * @description Values of ten visits or more, except the whole-site breakdowns
              *     exact from 1. With a filter, a client space or a raw referrer, the
@@ -1169,6 +1261,7 @@ export interface components {
             }[];
             /** @enum {string} */
             include: "full";
+            lists?: components["schemas"]["ReportLists"];
             /**
              * @description The only Web Vitals measurement method served.
              * @enum {string}
@@ -1566,6 +1659,42 @@ export interface components {
         ReportAvailabilitySectionId: string;
         /** @enum {string} */
         ReportAvailabilityStatus: "available" | "partially_available_outside_source_coverage" | "not_available_for_requested_period";
+        /** @description Counts by measure; `null` is "< 10". */
+        ReportListMeasures: {
+            [key: string]: number | null;
+        };
+        ReportListPage: components["schemas"]["ReportListPaging"] & {
+            rows: components["schemas"]["ReportListRow"][];
+        };
+        /**
+         * @description Paging of a list, present when `list` is given. `totals` is the total
+         *     of the whole list. `other` is `totals` minus the rows of ranks 1 to
+         *     `offset` + page size; a hidden part of 1 to 9 that would leave it at
+         *     zero is published "< 10" (`null`), never a zero; it is `null` with a
+         *     `search`. Present with `list` on `GET /v1/metrics/breakdown` as `page`.
+         */
+        ReportListPaging: {
+            /** @description Offset of the next page; null on the last one. */
+            next_offset: number | null;
+            other: components["schemas"]["ReportListMeasures"] | null;
+            /**
+             * @description Rows after masking and search; null when the head of the ranking
+             *     proves the order without counting the rest.
+             */
+            total_rows: number | null;
+            totals: components["schemas"]["ReportListMeasures"];
+        };
+        ReportListRow: {
+            measures: components["schemas"]["ReportListMeasures"];
+            previous?: components["schemas"]["ReportListMeasures"] | null;
+            title: string | null;
+            /** @description Path, domain or name. */
+            value: string;
+        };
+        /** @description The page of the list asked by `list`, keyed by its identifier. */
+        ReportLists: {
+            [key: string]: components["schemas"]["ReportListPage"];
+        };
         ReportPeriodAvailability: {
             /** Format: date-time */
             compatibleEnd: string | null;
@@ -1802,6 +1931,7 @@ export interface components {
             campaigns_enabled: boolean;
             /** @description Visits with Campagnes consent in the period, published like the other counts. `0` when the option is off. */
             consented_sessions: number | null;
+            lists?: components["schemas"]["ReportLists"];
             /**
              * @description Visits with consent by campaign (Campagnes option, section
              *     `acquisition_attribution`); empty without the option.
@@ -2064,6 +2194,16 @@ export interface components {
         BreakdownDimension: "device" | "referrer" | "page" | "browser" | "os" | "country" | "tenant";
         /** @description Number of rows returned by breakdown endpoint. */
         BreakdownLimit: number;
+        /**
+         * @description Reads the breakdown as the paginated list of its dimension (`device`:
+         *     `devices`, `referrer`: `referrers`, `page`: `pages`, `browser`:
+         *     `browsers`, `os`: `systems`, `country`: `countries`). Whole site, no
+         *     `filters` and no `tenant_id`. `rows[].value` is the main measure of the
+         *     list (pageviews for `pages`, visits for the others); a `metric` other
+         *     than `pageviews` for `pages` or `sessions` for the others is refused and `page` carries `next_offset`, `total_rows`, `totals` and
+         *     `other`.
+         */
+        BreakdownListParam: "devices" | "referrers" | "pages" | "browsers" | "systems" | "countries";
         /** @description Compare current range against the previous equivalent period. */
         CompareParam: "prev_period";
         /**
@@ -2083,6 +2223,36 @@ export interface components {
         FromDate: string;
         /** @description Granularity (`day` or `hour`, on every plan with API access). */
         Interval: "day" | "hour";
+        /** @description Rank of the first row of the page of `list`. */
+        ListOffset: number;
+        /** @description Order of `sort` (`desc` for a measure, `asc` for `value`). */
+        ListOrder: "asc" | "desc";
+        /**
+         * @description Page size of `list`, when it is not `limit`. Without it `limit` is the
+         *     page size (25 when `limit` is absent too); `offset + page size` is at
+         *     most 10 000.
+         */
+        ListPageSize: number;
+        /**
+         * @description A list of the report read page by page (see Pagination). Content serves
+         *     `pages`, `entry_pages` and `exit_pages`; Acquisition serves
+         *     `landing_pages`, `referrers` and the Campagnes lists. The page is
+         *     returned in `current.lists.<list>` next to the report, which keeps its
+         *     own arrays. Needs `include=full` (the default when `list` is given);
+         *     not served with a client space (`tenant_id`).
+         */
+        ListParam: "pages" | "entry_pages" | "exit_pages" | "landing_pages" | "referrers" | "campaign_channels" | "campaign_sources" | "campaign_mediums" | "campaigns" | "campaign_contents" | "campaign_terms";
+        /**
+         * @description Rows of `list` whose value (path, domain, name) or title contains the
+         *     text, case-insensitive, accents significant. A value under ten visits
+         *     that the list hides is never found. `other` is null with a search.
+         */
+        ListSearch: string;
+        /**
+         * @description Sort of `list`: one of its measures or `value` (alphabetical). The
+         *     default is its main measure, descending, ties broken by the value.
+         */
+        ListSort: string;
         /**
          * @description Metric to aggregate (default `pageviews`). `sessions` uses the same
          *     visit model as the dashboard: a `visit_id` starts from the

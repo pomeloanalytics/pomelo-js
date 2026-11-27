@@ -43,10 +43,10 @@ const cases: { path: ApiPath; invoke: (client: PomeloClient) => Promise<unknown>
   { path: '/v1/sites', invoke: (client) => client.sites.list(), expected: {} },
   { path: '/v1/tenants', invoke: (client) => client.tenants.list({ siteId }), expected: { site_id: siteId } },
   { path: '/v1/metrics/timeseries', invoke: (client) => client.metrics.timeseries({ ...range, metric: 'sessions', interval: 'hour', filters: '{"device":"mobile"}' }), expected: { site_id: siteId, tenant_id: tenantId, from, to, metric: 'sessions', interval: 'hour', filters: '{"device":"mobile"}' } },
-  { path: '/v1/metrics/breakdown', invoke: (client) => client.metrics.breakdown({ ...range, metric: 'events', dimension: 'tenant', limit: 500, filters: '{"device":"mobile"}' }), expected: { site_id: siteId, tenant_id: tenantId, from, to, metric: 'events', dimension: 'tenant', limit: '500', filters: '{"device":"mobile"}' } },
+  { path: '/v1/metrics/breakdown', invoke: (client) => client.metrics.breakdown({ ...range, metric: 'events', dimension: 'tenant', limit: 500, filters: '{"device":"mobile"}', list: 'devices', listLimit: 25, offset: 50, sort: 'value', order: 'asc', search: 'ab' }), expected: { site_id: siteId, tenant_id: tenantId, from, to, metric: 'events', dimension: 'tenant', limit: '500', filters: '{"device":"mobile"}', list: 'devices', list_limit: '25', offset: '50', sort: 'value', order: 'asc', search: 'ab' } },
   { path: '/v1/reports/overview', invoke: (client) => client.reports.overview(report), expected: { site_id: siteId, tenant_id: tenantId, from, to, compare: 'prev_period', traffic: 'humans', limit: '2000' } },
-  { path: '/v1/reports/content', invoke: (client) => client.reports.content({ ...report, include: 'summary' }), expected: { site_id: siteId, tenant_id: tenantId, from, to, compare: 'prev_period', traffic: 'humans', limit: '2000', include: 'summary' } },
-  { path: '/v1/reports/acquisition', invoke: (client) => client.reports.acquisition({ ...report, include: 'details', goalId: 'goal-test' }), expected: { site_id: siteId, tenant_id: tenantId, from, to, compare: 'prev_period', traffic: 'humans', limit: '2000', include: 'details', goal_id: 'goal-test' } },
+  { path: '/v1/reports/content', invoke: (client) => client.reports.content({ ...report, include: 'summary', list: 'pages', listLimit: 25, offset: 50, sort: 'value', order: 'asc', search: 'ab' }), expected: { site_id: siteId, tenant_id: tenantId, from, to, compare: 'prev_period', traffic: 'humans', limit: '2000', include: 'summary', list: 'pages', list_limit: '25', offset: '50', sort: 'value', order: 'asc', search: 'ab' } },
+  { path: '/v1/reports/acquisition', invoke: (client) => client.reports.acquisition({ ...report, include: 'details', goalId: 'goal-test', list: 'referrers', listLimit: 25, offset: 50, sort: 'value', order: 'asc', search: 'ab' }), expected: { site_id: siteId, tenant_id: tenantId, from, to, compare: 'prev_period', traffic: 'humans', limit: '2000', include: 'details', goal_id: 'goal-test', list: 'referrers', list_limit: '25', offset: '50', sort: 'value', order: 'asc', search: 'ab' } },
   { path: '/v1/reports/actions', invoke: (client) => client.reports.actions({ ...report, include: 'summary', actionFamily: 'forms', actionKey: 'contact_submit' }), expected: { site_id: siteId, tenant_id: tenantId, from, to, compare: 'prev_period', traffic: 'humans', limit: '2000', include: 'summary', action_family: 'forms', action_key: 'contact_submit' } },
   { path: '/v1/goals', invoke: (client) => client.goals.list({ siteId }), expected: { site_id: siteId } },
   { path: '/v1/goals/conversions', invoke: (client) => client.goals.conversions(report), expected: { site_id: siteId, tenant_id: tenantId, from, to, compare: 'prev_period', traffic: 'humans', limit: '2000' } },
@@ -206,4 +206,15 @@ test('a small-site basis says why its totals come from a wider period', () => {
   assert.equal(basis.reason, 'filter_complement');
   const legacy: components['schemas']['SmallSiteBasis'] = { period: basis.period, totals: basis.totals };
   assert.equal(legacy.reason, undefined);
+});
+
+test('list parameters reach the wire and the page is typed', async () => {
+  const page = { rows: [{ value: '/a', title: null, measures: { pageviews: 3 } }], next_offset: null, total_rows: 1, totals: { pageviews: 3 }, other: { pageviews: null } } satisfies components['schemas']['ReportListPage'];
+  const { client, urls } = mock({ current: { lists: { pages: page } } });
+  await client.reports.content({ siteId, from, to, list: 'pages', offset: 25, sort: 'value', order: 'asc', search: 'blog' });
+  assert.equal(urls[0]!.searchParams.get('list'), 'pages');
+  assert.equal(urls[0]!.searchParams.get('offset'), '25');
+  assert.equal(urls[0]!.searchParams.get('sort'), 'value');
+  assert.equal(urls[0]!.searchParams.get('order'), 'asc');
+  assert.equal(urls[0]!.searchParams.get('search'), 'blog');
 });
