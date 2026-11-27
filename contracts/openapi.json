@@ -104,6 +104,23 @@
           "type": "integer"
         }
       },
+      "BreakdownListParam": {
+        "description": "Reads the breakdown as the paginated list of its dimension (`device`:\n`devices`, `referrer`: `referrers`, `page`: `pages`, `browser`:\n`browsers`, `os`: `systems`, `country`: `countries`). Whole site, no\n`filters` and no `tenant_id`. `rows[].value` is the main measure of the\nlist (pageviews for `pages`, visits for the others); a `metric` other\nthan `pageviews` for `pages` or `sessions` for the others is refused and `page` carries `next_offset`, `total_rows`, `totals` and\n`other`.\n",
+        "in": "query",
+        "name": "list",
+        "required": false,
+        "schema": {
+          "enum": [
+            "devices",
+            "referrers",
+            "pages",
+            "browsers",
+            "systems",
+            "countries"
+          ],
+          "type": "string"
+        }
+      },
       "CompareParam": {
         "description": "Compare current range against the previous equivalent period.",
         "in": "query",
@@ -158,6 +175,85 @@
             "day",
             "hour"
           ],
+          "type": "string"
+        }
+      },
+      "ListOffset": {
+        "description": "Rank of the first row of the page of `list`.",
+        "in": "query",
+        "name": "offset",
+        "required": false,
+        "schema": {
+          "default": 0,
+          "maximum": 9999,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "ListOrder": {
+        "description": "Order of `sort` (`desc` for a measure, `asc` for `value`).",
+        "in": "query",
+        "name": "order",
+        "required": false,
+        "schema": {
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "type": "string"
+        }
+      },
+      "ListPageSize": {
+        "description": "Page size of `list`, when it is not `limit`. Without it `limit` is the\npage size (25 when `limit` is absent too); `offset + page size` is at\nmost 10 000.\n",
+        "in": "query",
+        "name": "list_limit",
+        "required": false,
+        "schema": {
+          "default": 25,
+          "maximum": 2000,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "ListParam": {
+        "description": "A list of the report read page by page (see Pagination). Content serves\n`pages`, `entry_pages` and `exit_pages`; Acquisition serves\n`landing_pages`, `referrers` and the Campagnes lists. The page is\nreturned in `current.lists.<list>` next to the report, which keeps its\nown arrays. Needs `include=full` (the default when `list` is given);\nnot served with a client space (`tenant_id`).\n",
+        "in": "query",
+        "name": "list",
+        "required": false,
+        "schema": {
+          "enum": [
+            "pages",
+            "entry_pages",
+            "exit_pages",
+            "landing_pages",
+            "referrers",
+            "campaign_channels",
+            "campaign_sources",
+            "campaign_mediums",
+            "campaigns",
+            "campaign_contents",
+            "campaign_terms"
+          ],
+          "type": "string"
+        }
+      },
+      "ListSearch": {
+        "description": "Rows of `list` whose value (path, domain, name) or title contains the\ntext, case-insensitive, accents significant. A value under ten visits\nthat the list hides is never found. `other` is null with a search.\n",
+        "in": "query",
+        "name": "search",
+        "required": false,
+        "schema": {
+          "maxLength": 100,
+          "minLength": 2,
+          "type": "string"
+        }
+      },
+      "ListSort": {
+        "description": "Sort of `list`: one of its measures or `value` (alphabetical). The\ndefault is its main measure, descending, ties broken by the value.\n",
+        "in": "query",
+        "name": "sort",
+        "required": false,
+        "schema": {
           "type": "string"
         }
       },
@@ -1174,6 +1270,9 @@
           "meta": {
             "$ref": "#/components/schemas/MeteredMeta"
           },
+          "page": {
+            "$ref": "#/components/schemas/ReportListPaging"
+          },
           "rows": {
             "description": "Values of ten visits or more, except the whole-site breakdowns\nexact from 1. With a filter, a client space or a raw referrer, the\nvalues under ten visits are grouped in one last row,\n`key: \"(other)\"`, summed before the cut to `limit`; its `value` is\nexact from 10 and `null` from 1 to 9, and the row is absent when\nnothing is grouped. A client that reads the rows as entities must\nskip it.\n",
             "items": {
@@ -1287,6 +1386,9 @@
               "full"
             ],
             "type": "string"
+          },
+          "lists": {
+            "$ref": "#/components/schemas/ReportLists"
           },
           "metric_method": {
             "description": "The only Web Vitals measurement method served.",
@@ -2622,6 +2724,104 @@
         ],
         "type": "string"
       },
+      "ReportListMeasures": {
+        "additionalProperties": {
+          "nullable": true,
+          "type": "integer"
+        },
+        "description": "Counts by measure; `null` is \"< 10\".",
+        "type": "object"
+      },
+      "ReportListPage": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ReportListPaging"
+          },
+          {
+            "properties": {
+              "rows": {
+                "items": {
+                  "$ref": "#/components/schemas/ReportListRow"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "rows"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ReportListPaging": {
+        "description": "Paging of a list, present when `list` is given. `totals` is the total\nof the whole list. `other` is `totals` minus the rows of ranks 1 to\n`offset` + page size; a hidden part of 1 to 9 that would leave it at\nzero is published \"< 10\" (`null`), never a zero; it is `null` with a\n`search`. Present with `list` on `GET /v1/metrics/breakdown` as `page`.\n",
+        "properties": {
+          "next_offset": {
+            "description": "Offset of the next page; null on the last one.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "other": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportListMeasures"
+              }
+            ],
+            "nullable": true
+          },
+          "total_rows": {
+            "description": "Rows after masking and search; null when the head of the ranking\nproves the order without counting the rest.\n",
+            "nullable": true,
+            "type": "integer"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/ReportListMeasures"
+          }
+        },
+        "required": [
+          "next_offset",
+          "total_rows",
+          "totals",
+          "other"
+        ],
+        "type": "object"
+      },
+      "ReportListRow": {
+        "properties": {
+          "measures": {
+            "$ref": "#/components/schemas/ReportListMeasures"
+          },
+          "previous": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportListMeasures"
+              }
+            ],
+            "nullable": true
+          },
+          "title": {
+            "nullable": true,
+            "type": "string"
+          },
+          "value": {
+            "description": "Path, domain or name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "title",
+          "measures"
+        ],
+        "type": "object"
+      },
+      "ReportLists": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ReportListPage"
+        },
+        "description": "The page of the list asked by `list`, keyed by its identifier.",
+        "type": "object"
+      },
       "ReportPeriodAvailability": {
         "properties": {
           "compatibleEnd": {
@@ -3404,6 +3604,9 @@
             "description": "Visits with Campagnes consent in the period, published like the other counts. `0` when the option is off.\n",
             "nullable": true,
             "type": "number"
+          },
+          "lists": {
+            "$ref": "#/components/schemas/ReportLists"
           },
           "top_campaigns": {
             "description": "Visits with consent by campaign (Campagnes option, section\n`acquisition_attribution`); empty without the option.\n",
@@ -4249,6 +4452,24 @@
           },
           {
             "$ref": "#/components/parameters/Filters"
+          },
+          {
+            "$ref": "#/components/parameters/BreakdownListParam"
+          },
+          {
+            "$ref": "#/components/parameters/ListPageSize"
+          },
+          {
+            "$ref": "#/components/parameters/ListOffset"
+          },
+          {
+            "$ref": "#/components/parameters/ListSort"
+          },
+          {
+            "$ref": "#/components/parameters/ListOrder"
+          },
+          {
+            "$ref": "#/components/parameters/ListSearch"
           }
         ],
         "responses": {
@@ -4426,6 +4647,24 @@
           },
           {
             "$ref": "#/components/parameters/AcquisitionGoalId"
+          },
+          {
+            "$ref": "#/components/parameters/ListParam"
+          },
+          {
+            "$ref": "#/components/parameters/ListPageSize"
+          },
+          {
+            "$ref": "#/components/parameters/ListOffset"
+          },
+          {
+            "$ref": "#/components/parameters/ListSort"
+          },
+          {
+            "$ref": "#/components/parameters/ListOrder"
+          },
+          {
+            "$ref": "#/components/parameters/ListSearch"
           }
         ],
         "responses": {
@@ -4604,6 +4843,24 @@
           },
           {
             "$ref": "#/components/parameters/ReportLimit"
+          },
+          {
+            "$ref": "#/components/parameters/ListParam"
+          },
+          {
+            "$ref": "#/components/parameters/ListPageSize"
+          },
+          {
+            "$ref": "#/components/parameters/ListOffset"
+          },
+          {
+            "$ref": "#/components/parameters/ListSort"
+          },
+          {
+            "$ref": "#/components/parameters/ListOrder"
+          },
+          {
+            "$ref": "#/components/parameters/ListSearch"
           }
         ],
         "responses": {

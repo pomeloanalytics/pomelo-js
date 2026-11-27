@@ -1,7 +1,7 @@
 {
   "artifact": {
     "path": "openapi.json",
-    "sha256": "46c85546caca805321489b9984c70c704ff7bdd09a88c77ca2b0a92927cf60ce"
+    "sha256": "6b845763fe67906312a0410bcd6c8e7f8cf3321c57cb566d0050d9c43c7eefbb"
   },
   "components": {
     "headers": [
@@ -17,11 +17,18 @@
       "ActionKey",
       "BreakdownDimension",
       "BreakdownLimit",
+      "BreakdownListParam",
       "CompareParam",
       "ContentInclude",
       "Filters",
       "FromDate",
       "Interval",
+      "ListOffset",
+      "ListOrder",
+      "ListPageSize",
+      "ListParam",
+      "ListSearch",
+      "ListSort",
       "Metric",
       "ReportInclude",
       "ReportLimit",
@@ -91,6 +98,11 @@
       "ReportAvailabilityRouteId",
       "ReportAvailabilitySectionId",
       "ReportAvailabilityStatus",
+      "ReportListMeasures",
+      "ReportListPage",
+      "ReportListPaging",
+      "ReportListRow",
+      "ReportLists",
       "ReportPeriodAvailability",
       "ReportSectionAvailability",
       "RetentionPolicy",
@@ -204,7 +216,7 @@
   ],
   "policy": {
     "path": "openapi/public-export-policy.json",
-    "sha256": "ef80f3cfc13635f956b0dd1f4792778b320e8c4cb78d22c7cf0ec829b8418bbf",
+    "sha256": "06eaadbf0702a0fc7d2833a1ff610e2a5bb41d40b76afbe4f44c8879b8d6d2a5",
     "version": 1
   },
   "projections": [
@@ -246,9 +258,9 @@
   ],
   "proof": "Source-only projection; no deployed artifact or authenticated runtime verification.",
   "source": {
-    "commit": "232dbc1ed911f24cb68e9c0feb4f708f3a262787",
+    "commit": "a59839a8fa17ccfa8313a1255f3ff1c00edd7b73",
     "path": "openapi/v1.yaml",
-    "sha256": "5404b42c8695aad6fd6227ab2a6e40e73869385d3211fe466c184d656ed1f8d6"
+    "sha256": "cf6094889a8841720a9303b96fabf5d14b28c4fefdc06a6cb45c957e916397d2"
   },
   "version": 1
 }

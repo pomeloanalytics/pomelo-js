@@ -119,6 +119,12 @@ The server owns defaults, period validation, entitlements, and numeric limits;
 the SDK does not choose content depth, clamp limits, or change a requested range.
 Content `include` accepts `summary` or `full`.
 
+Lists are read page by page with `list`, `limit` or `listLimit`, `offset`, `sort`,
+`order` and `search` on `reports.content`, `reports.acquisition` and
+`metrics.breakdown`. The page is in `current.lists.<list>` (`rows`, `next_offset`,
+`total_rows`, `totals`, `other`); a count of 1 to 9 on a protected list is `null`
+(under 10), never zero. Follow `next_offset` until it is `null`.
+
 Full Content responses can include `current.metric_method` and
 `current.pages[].performance.n_lcp`, `n_fcp`, `n_inp`, `n_cls` and `n_ttfb`.
 These optional fields identify the selected measurement method and each metric's
